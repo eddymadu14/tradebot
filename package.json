@@ -1,0 +1,19 @@
+{
+  "name": "tradebot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "ccxt": "^4.5.22",
+    "dotenv": "^17.2.3",
+    "node-fetch": "^3.3.2",
+    "technicalindicators": "^3.1.0"
+  }
+}
