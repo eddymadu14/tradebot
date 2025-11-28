@@ -373,8 +373,6 @@ export async function runSOL() {
     if (isChop(daily)) {
       console.log("Market in chop — skipping zones.");
       // Now: send status message (user requested always notify)
-      const msg = buildStatusMessage({ symbol: SYMBOL, reason: "Market in CHOP (skipping zone creation)", lastPrice });
-      await sendTelegramMessage(msg);
       return;
     }
 
@@ -383,8 +381,6 @@ export async function runSOL() {
     if (trend === "invalid") {
       console.log("Trend invalid:", trendObj.reason);
       // send status message
-      const msg = buildStatusMessage({ symbol: SYMBOL, reason: `Trend invalid: ${trendObj.reason}`, lastPrice, trendObj });
-      await sendTelegramMessage(msg);
       return;
     }
 
@@ -392,8 +388,6 @@ export async function runSOL() {
     const now = Date.now();
     if (!isInSniperWindow(now)) {
       console.log("Outside sniper entry window (redundant check) — skipping.");
-      const msg = buildStatusMessage({ symbol: SYMBOL, reason: "Outside sniper entry window", lastPrice, trendObj });
-      await sendTelegramMessage(msg);
       return;
     }
 
@@ -426,8 +420,6 @@ export async function runSOL() {
       }
     } else {
       console.log("Unhandled trend state:", trend);
-      const msg = buildStatusMessage({ symbol: SYMBOL, reason: `Unhandled trend state: ${trend}`, lastPrice, trendObj });
-      await sendTelegramMessage(msg);
     }
   } catch (err) {
     console.error("CTWL-Pro ERROR:", err.message || err);
@@ -444,3 +436,4 @@ export async function runSOL() {
 // ==========
 // Allow module usage too: default immediate start
 // NOTE: this will run scheduler automatically when file is imported/run without flags
+
