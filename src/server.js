@@ -1,24 +1,42 @@
 import dotenv from 'dotenv';
-dotenv.config();  // load env vars first
+dotenv.config(); // Load environment variables first
 
 import express from 'express';
-import { startBots, msUntilNext4HBoundary } from './app.js';
+import { startBots } from './app.js'; // Import your bot starter from app.js
 
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-app.get('/', (req, res) => res.send('Tradebot running 🚀'));
-
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-  scheduleBots(); // start scheduler AFTER dotenv loaded
+// Health check route
+app.get('/', (req, res) => {
+  res.send('Tradebot running 🚀');
 });
 
-function scheduleBots() {
-  console.log('Immediate run at startup.');
-  startBots(); // run once immediately
+// Optional manual bot trigger (for testing in browser)
+app.get('/run', async (req, res) => {
+  res.send('ok');
+  setTimeout(async () => {
+    try {
+      await startBots();
+    } catch (err) {
+      console.error('Manual run failed:', err);
+    }
+  }, 10);
+});
 
-  const delay = msUntilNext4HBoundary();
-  console.log(`Scheduler: waiting ${Math.round(delay / 1000)}s until next 4H boundary`);
-  setTimeout(scheduleBots, delay); // schedule next run
-}
+// External cron route
+app.get('/cron/run', async (req, res) => {
+  res.send('ok');
+  setTimeout(async () => {
+    try {
+      await startBots();
+    } catch (err) {
+      console.error('Cron bot run failed:', err);
+    }
+  }, 10);
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
