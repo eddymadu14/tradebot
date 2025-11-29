@@ -1,42 +1,41 @@
 import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables first
+dotenv.config();
 
 import express from 'express';
-import { startBots } from './app.js'; // Import your bot starter from app.js
+import { startBots } from './app.js';
 
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-// Health check route
-app.get('/', (req, res) => {
-  res.send('Tradebot running 🚀');
+// Health check
+app.get('/', (req, res) => res.send('Tradebot running 🚀'));
+
+// Run bots silently
+const runBotsSilent = async () => {
+try {
+await startBots();
+} catch (err) {
+// Log errors only, do NOT log anything during wake
+console.error('Bot run failed:', err);
+}
+};
+
+// Manual trigger (suppress wake log)
+app.get('/run', (req, res) => {
+// Respond immediately before any other operation
+res.send('ok');
+
+// Run bot asynchronously after response
+process.nextTick(() => runBotsSilent());
 });
 
-// Optional manual bot trigger (for testing in browser)
-app.get('/run', async (req, res) => {
-  res.send('ok');
-  setTimeout(async () => {
-    try {
-      await startBots();
-    } catch (err) {
-      console.error('Manual run failed:', err);
-    }
-  }, 10);
-});
-
-// External cron route
-app.get('/cron/run', async (req, res) => {
-  res.send('ok');
-  setTimeout(async () => {
-    try {
-      await startBots();
-    } catch (err) {
-      console.error('Cron bot run failed:', err);
-    }
-  }, 10);
+// Cron trigger (suppress wake log)
+app.get('/cron/run', (req, res) => {
+res.send('ok'); // Respond immediately
+process.nextTick(() => runBotsSilent());
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+console.log("🚀 Server running on port ${PORT}");
 });
