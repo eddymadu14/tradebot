@@ -1,5 +1,7 @@
-import dotenv from 'dotenv';
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+  // Only load dotenv in local development
+  import('dotenv').then(dotenv => dotenv.config());
+}
 
 import express from 'express';
 import { startBots } from './app.js';
@@ -7,35 +9,61 @@ import { startBots } from './app.js';
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-// Health check
+// ----------------------
+// HEALTH CHECK
+// ----------------------
 app.get('/', (req, res) => res.send('Tradebot running 🚀'));
 
-// Run bots silently
+// ----------------------
+// SILENT BOT RUNNER
+// ----------------------
 const runBotsSilent = async () => {
-try {
-await startBots();
-} catch (err) {
-// Log errors only, do NOT log anything during wake
-console.error('Bot run failed:', err);
-}
+  try {
+    await startBots();
+  } catch (err) {
+    console.error('Bot run failed:', err);
+  }
 };
 
-// Manual trigger (suppress wake log)
+// ----------------------
+// CRON + MANUAL TRIGGERS
+// ----------------------
 app.get('/run', (req, res) => {
-// Respond immediately before any other operation
-res.send('ok');
-
-// Run bot asynchronously after response
-process.nextTick(() => runBotsSilent());
+  res.send('ok');
+  process.nextTick(() => runBotsSilent());
 });
 
-// Cron trigger (suppress wake log)
 app.get('/cron/run', (req, res) => {
-res.send('ok'); // Respond immediately
-process.nextTick(() => runBotsSilent());
+  res.send('ok');
+  process.nextTick(() => runBotsSilent());
 });
 
-// Start server
+// ----------------------
+// INTERNAL LOOP
+// ----------------------
+let isLoopRunning = false;
+
+function startInternalLoop() {
+  if (isLoopRunning) return;
+  isLoopRunning = true;
+
+  console.log("🔁 Internal CTWL loop started…");
+
+  setInterval(async () => {
+    try {
+      await startBots();   // <-- Runs EVERY 60 seconds
+    } catch (err) {
+      console.error("Loop error:", err);
+    }
+  }, 60 * 1000); // 1 minute
+}
+
+// Start loop immediately
+startInternalLoop();
+
+// ----------------------
+// START SERVER
+// ----------------------
 app.listen(PORT, () => {
-console.log("🚀 Server running on port ${PORT}");
+  console.log(`🚀 Server running on port ${PORT}`);
 });
