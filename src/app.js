@@ -11,62 +11,37 @@ export async function startBots() {
   await runSOL();
 }
 
-// ---------------- 4H SCHEDULER -----------------
-
-export function msUntilNext4HBoundary() {
-  const now = new Date();
-
-  const nextHour =
-    Math.ceil((now.getUTCHours() + now.getUTCMinutes() / 60) / 4) * 4;
-
-  const next = new Date(
-    Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      nextHour
-    )
-  );
-
-  let diff = next.getTime() - now.getTime();
-  if (diff <= 0) diff += 4 * 60 * 60 * 1000;
-
-  return diff;
-}
-
-export async function startScheduler() {
-  console.log("⏳ Immediate 4H bot run at startup...");
-  await startBots();
-
-  const delay = msUntilNext4HBoundary();
-  console.log(
-    `📆 Scheduler: next 4H run in ${Math.round(
-      delay / 1000
-    )} seconds (${(delay / 3600000).toFixed(2)} hours)`
-  );
-
-  setTimeout(startScheduler, delay);
-}
-
 // ---------------- EXPRESS SERVER ----------------
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// OPTIONAL: Silence Render cold-start logs (enable if needed)
+// if (process.env.RENDER) {
+//   console.log = () => {};
+//   console.error = () => {};
+// }
 
 // HEALTH CHECK
 app.get("/", (req, res) => {
   res.send("Bot is live.");
 });
 
-// ---------------- CRON ROUTE (IMPORTANT) ----------------
-// This is what your external cron site will call
+// ---------------- SILENT CRON ROUTE ----------------
+// External cron will call this endpoint.
+// Response is sent immediately to avoid Render cold-start log spam.
 app.get("/cron/run", async (req, res) => {
-  try {
-    await startBots();
-    res.send("OK"); // DO NOT return large JSON
-  } catch (err) {
-    res.send("ERR: " + err.message);
-  }
+  // Respond instantly
+  res.status(200).send("ok");
+
+  // Run bots after response – prevents output-too-large on cold start
+  setTimeout(async () => {
+    try {
+      await startBots();
+    } catch (err) {
+      console.error("Cron bot run failed:", err.message);
+    }
+  }, 10);
 });
 
 // ---------------- START SERVER ----------------
@@ -74,6 +49,3 @@ app.get("/cron/run", async (req, res) => {
 app.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
 });
-
-// Optionally start the internal 4H scheduler
-// startScheduler();
