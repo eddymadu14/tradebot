@@ -10,8 +10,6 @@ export async function startBots() {
   try {
     console.log("🚀 Starting bot cycle...");
     await runBTC();
-    await runSUI();
-    await runSOL();
     await runBTC1h();
     await runSOL1h();
     console.log("✅ Bot cycle completed.");
