@@ -8,11 +8,9 @@ dotenv.config();
 // ========================================
 const SYMBOL = "BTC/USDT";
 const TIMEFRAMES = { daily: "1d", intraday: "4h" };
-
 const ATR_PERIOD = 14;
 const EMA_STACK = [20, 50, 100, 200];
 const IMPULSE_VOLUME_FACTOR = 1.5; // how much stronger volume must be than average to count as strong impulse
-
 // Sniper entry windows - aligned with 4h candles (UTC)
 const ENTRY_WINDOWS_UTC = [0, 4, 8, 12, 16, 20];
 
@@ -199,7 +197,7 @@ function computeBuyZone(daily, intraday, trend) {
 
 // ========================================
 // COMPUTE SELL ZONE (mirror)
- // ========================================
+// ========================================
 function computeSellZone(daily, intraday, trend) {
   const ob = detectOBFVG(intraday, "bear");
   if (!ob) return null;
@@ -244,20 +242,77 @@ function computeSLTP(zone, trend) {
 }
 
 // ========================================
-// CHOP DETECTION
+// CHOP DETECTION (returns details)
 // ========================================
-function isChop(candles) {
+function computeChopDetails(candles) {
+  // returns an object with diagnostic info and boolean isChop
+  if (candles.length < 30) return { isChop: false, reason: "insufficient candles" };
+
   const highs = candles.map((c) => c.h);
   const lows = candles.map((c) => c.l);
   const closes = candles.map((c) => c.c);
-  const atrArr = ATR.calculate({ high: highs, low: lows, close: closes, period: ATR_PERIOD });
 
-  const last8 = atrArr.slice(-8);
-  if (last8.length < 8) return false;
-  const atrAvg = last8.reduce((a, b) => a + b, 0) / 8;
-  const bodySizes = candles.slice(-8).map((c) => Math.abs(c.c - c.o));
-  const avgBody = bodySizes.reduce((a, b) => a + b, 0) / 8;
-  return avgBody < 0.5 * atrAvg;
+  const atrArr = ATR.calculate({
+    high: highs,
+    low: lows,
+    close: closes,
+    period: ATR_PERIOD
+  });
+
+  if (!atrArr || atrArr.length < ATR_PERIOD) return { isChop: false, reason: "insufficient ATR" };
+
+  const last8 = candles.slice(-8);
+  const atrLast8 = atrArr.slice(-8);
+  if (atrLast8.length < 8) return { isChop: false, reason: "insufficient ATR slice" };
+
+  const atrAvg = atrLast8.reduce((a, b) => a + b, 0) / atrLast8.length;
+
+  // Signal #1 — small bodies vs ATR
+  const bodySizes = last8.map(c => Math.abs(c.c - c.o));
+  const avgBody = bodySizes.reduce((a, b) => a + b, 0) / bodySizes.length;
+  const condBodyVsAtr = (avgBody < 0.30 * atrAvg);
+
+  // Signal #2 — weak directional progress
+  const netMove = Math.abs(last8[last8.length - 1].c - last8[0].o);
+  const atrTotal = atrAvg * 8;
+  const condWeakMovement = (netMove < 0.20 * atrTotal);
+
+  // Signal #3 — high overlap / indecision candles
+  let overlapCount = 0;
+  for (let i = candles.length - 8; i < candles.length - 1; i++) {
+    const c1 = candles[i];
+    const c2 = candles[i + 1];
+    if (c2.h <= c1.h && c2.l >= c1.l) overlapCount++;
+  }
+  const condOverlap = (overlapCount >= 4);
+
+  const conditions = [condBodyVsAtr, condWeakMovement, condOverlap];
+  const chopScore = conditions.filter(Boolean).length;
+  const isChop = chopScore >= 2;
+
+  // Choppiness range calculation (use last N candles range)
+  const RANGE_LOOKBACK = 8;
+  const window = candles.slice(-RANGE_LOOKBACK);
+  const highest = Math.max(...window.map(c => c.h));
+  const lowest = Math.min(...window.map(c => c.l));
+  const rangeWidth = highest - lowest;
+  // Avoid division by zero
+  const deviation = atrAvg > 0 ? rangeWidth / atrAvg : null;
+
+  return {
+    isChop,
+    chopScore,
+    conditions: {
+      condBodyVsAtr,
+      condWeakMovement,
+      condOverlap,
+    },
+    atrAvg,
+    rangeWidth,
+    deviation,
+    highest,
+    lowest,
+  };
 }
 
 // ========================================
@@ -308,19 +363,36 @@ function fmt(n) {
   return n.toFixed(6);
 }
 
-// Build the telegram-friendly message for zone
-function buildZoneMessage({ symbol, trend, zone, sltp, label, note }) {
+// Build the telegram-friendly message for zone, with chop diagnostics + sniper window flag
+function buildZoneMessage({ symbol, trend, zone, sltp, label, note, chopDetails, sniperWindow }) {
   const nowUTC = new Date().toISOString().replace("T", " ").replace("Z", " UTC");
   let msg = `*CTWL-Pro Alert*\n`;
   msg += `\n*Symbol:* ${symbol}\n*Trend:* ${trend.toUpperCase()}\n*When:* ${nowUTC}\n\n`;
-  msg += `*Zone:* ${fmt(zone.min)} — ${fmt(zone.max)} (mid ${fmt(zone.midpoint)})\n`;
-  msg += `*Strength:* ${zone.strength ? zone.strength.toFixed(2) : "n/a"}\n`;
-  if (zone.retest) msg += `*Retest observed:* yes\n`;
-  if (note) msg += `*Note:* ${note}\n`;
-  if (sltp) {
-    msg += `\n*SL:* ${fmt(sltp.sl)}\n*TP1:* ${fmt(sltp.tp1)}   *TP2:* ${fmt(sltp.tp2)}   *TP3:* ${fmt(sltp.tp3)}\n`;
-    msg += `*Estimated risk:* ${fmt(sltp.risk)}\n`;
+
+  if (!zone) {
+    msg += `_No zone available_\n`;
+  } else {
+    msg += `*Zone:* ${fmt(zone.min)} — ${fmt(zone.max)} (mid ${fmt(zone.midpoint)})\n`;
+    msg += `*Strength:* ${zone.strength ? zone.strength.toFixed(2) : "n/a"}\n`;
+    if (zone.retest) msg += `*Retest observed:* yes\n`;
+    if (note) msg += `*Note:* ${note}\n`;
+    if (sltp) {
+      msg += `\n*SL:* ${fmt(sltp.sl)}\n*TP1:* ${fmt(sltp.tp1)}   *TP2:* ${fmt(sltp.tp2)}   *TP3:* ${fmt(sltp.tp3)}\n`;
+      msg += `*Estimated risk:* ${fmt(sltp.risk)}\n`;
+    }
   }
+
+  // Sniper window + chop diagnostics
+  msg += `\n*Sniper window:* ${sniperWindow ? "YES" : "NO (use discretion)"}\n`;
+  if (chopDetails) {
+    msg += `*Chop:* ${chopDetails.isChop ? "YES" : "NO"}  (score ${chopDetails.chopScore}/3)\n`;
+    msg += `*Chop range:* ${fmt(chopDetails.lowest)} — ${fmt(chopDetails.highest)} (width ${fmt(chopDetails.rangeWidth)})\n`;
+    msg += `*Deviation:* ${chopDetails.deviation ? chopDetails.deviation.toFixed(3) : "n/a"} ATR\n`;
+    msg += `*Cond body<0.3ATR:* ${chopDetails.conditions.condBodyVsAtr ? "1" : "0"}  `;
+    msg += `*Weak move:* ${chopDetails.conditions.condWeakMovement ? "1" : "0"}  `;
+    msg += `*Overlap:* ${chopDetails.conditions.condOverlap ? "1" : "0"}\n`;
+  }
+
   if (label) msg += `\n_${label}_\n`;
   msg += `\n_Source: CTWL-Pro (no lookahead checks enforced)_`;
   return msg;
@@ -334,49 +406,90 @@ export async function runBTC() {
     const daily = await fetchCandles(SYMBOL, TIMEFRAMES.daily, 400);
     const intraday = await fetchCandles(SYMBOL, TIMEFRAMES.intraday, 200);
 
-    if (isChop(daily)) {
-      console.log("Market in chop — skipping zones.");
-      // You may want to notify but default is skip to avoid spam
-      return;
-    }
+    // Compute chop diagnostics on DAILY (as you originally did)
+    const chopDetails = computeChopDetails(daily);
 
+    // Trend detection
     const trendObj = detectTrend(daily);
     const trend = trendObj.trend;
     if (trend === "invalid") {
       console.log("Trend invalid:", trendObj.reason);
+      // We'll still fall through but avoid sending zones when trend invalid — keep behavior consistent
       return;
     }
 
-    // Time filter sanity (should always pass when scheduler aligned, but keep it)
+    // Time and sniper window check
     const now = Date.now();
-    if (!isInSniperWindow(now)) {
-      console.log("Outside sniper entry window (redundant check) — skipping.");
-      return;
-    }
+    const sniperWindow = isInSniperWindow(now);
 
+    // If we are in a chop or not in sniper window, we WILL STILL compute and send zones,
+    // but add warnings and chop diagnostics to the message.
+    const sendEvenIfChop = true; // follows Option A requirement
+
+    // For each side do normal zone compute, but attach chop + sniper diagnostics
     if (trend === "bull") {
       const zone = computeBuyZone(daily, intraday, trend);
       const sltp = computeSLTP(zone, "bull");
       if (!zone) {
         console.log("No valid buy origin/OB found — waiting for impulse.");
       } else {
+        // Decide label
+        let label = "VALID BUY ZONE";
+        if (chopDetails.isChop && !sniperWindow) {
+          label = "BUY ZONE — CHOP (OUTSIDE SNIPER WINDOW)";
+        } else if (chopDetails.isChop && sniperWindow) {
+          label = "BUY ZONE — CHOP (SNIPER WINDOW OPEN, CAUTION)";
+        } else if (!chopDetails.isChop && !sniperWindow) {
+          label = "BUY ZONE — OUTSIDE SNIPER WINDOW (manual discretion)";
+        }
+
         console.log("=== CTWL-Pro BUY OUTPUT ===");
-        console.log({ symbol: SYMBOL, trend, zone, sltp });
-        const msg = buildZoneMessage({ symbol: SYMBOL, trend, zone, sltp, label: "VALID BUY ZONE" });
+        console.log({ symbol: SYMBOL, trend, zone, sltp, label, chopDetails, sniperWindow });
+
+        const msg = buildZoneMessage({
+          symbol: SYMBOL,
+          trend,
+          zone,
+          sltp,
+          label,
+          note: zone.note,
+          chopDetails,
+          sniperWindow,
+        });
+
+        // Only skip send if neither sniperWindow nor sendEvenIfChop desired — but we will send per Option A
         await sendTelegramMessage(msg);
       }
     } else if (trend === "bear") {
-      console.log("Trend appears BEAR. Measuring sell-side...");
       const zone = computeSellZone(daily, intraday, trend);
       const sltp = computeSLTP(zone, "bear");
       if (!zone) {
         console.log("No valid sell origin/OB found — measuring continues.");
       } else {
-        const label = zone.retest ? "VALID SELL ZONE (retest observed)" : "VALID SELL ZONE (no retest)";
+        let label = zone.retest ? "VALID SELL ZONE (retest observed)" : "VALID SELL ZONE (no retest)";
+        if (chopDetails.isChop && !sniperWindow) {
+          label = "SELL ZONE — CHOP (OUTSIDE SNIPER WINDOW)";
+        } else if (chopDetails.isChop && sniperWindow) {
+          label = "SELL ZONE — CHOP (SNIPER WINDOW OPEN, CAUTION)";
+        } else if (!chopDetails.isChop && !sniperWindow) {
+          label = "SELL ZONE — OUTSIDE SNIPER WINDOW (manual discretion)";
+        }
+
         console.log("=== CTWL-Pro SELL OUTPUT ===");
         console.log(label);
-        console.log({ symbol: SYMBOL, trend, zone, sltp });
-        const msg = buildZoneMessage({ symbol: SYMBOL, trend, zone, sltp, label, note: zone.note });
+        console.log({ symbol: SYMBOL, trend, zone, sltp, chopDetails, sniperWindow });
+
+        const msg = buildZoneMessage({
+          symbol: SYMBOL,
+          trend,
+          zone,
+          sltp,
+          label,
+          note: zone.note,
+          chopDetails,
+          sniperWindow,
+        });
+
         await sendTelegramMessage(msg);
       }
     } else {
@@ -392,5 +505,3 @@ export async function runBTC() {
     }
   }
 }
-
-
