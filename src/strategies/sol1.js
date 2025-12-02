@@ -1,36 +1,36 @@
-// ctwl-pro.js
-// Full CTWL-Pro patched with CHOP MODE, preserving original logic and behavior.
-// Drop-in replacement for your engine file.
-// Requirements: ccxt, technicalindicators, node-fetch, dotenv
-
 import ccxt from "ccxt";
 import { EMA, ATR } from "technicalindicators";
 import fetch from "node-fetch";
 import dotenv from 'dotenv';
 dotenv.config();
-
-// ==================== CONFIG ====================
-const symbol = "SOL/USDT";
-const DEFAULT_SYMBOL = "SOL/USDT";
+// ========================================
+// CONFIGURATION (secrets in .env)
+// ========================================
+const SYMBOL = "SOL/USDT";
 const TIMEFRAMES = { daily: "1d", intraday: "4h" };
 
 const ATR_PERIOD = 14;
 const EMA_STACK = [20, 50, 100, 200];
-const IMPULSE_VOLUME_FACTOR = 1.5;
+const IMPULSE_VOLUME_FACTOR = 1.5; // how much stronger volume must be than average to count as strong impulse
 
-const ENTRY_WINDOWS_UTC = [0,4,8,12,16,20];
+// Sniper entry windows - aligned with 4h candles (UTC)
+const ENTRY_WINDOWS_UTC = [0, 4, 8, 12, 16, 20];
 
+// Telegram / Binance credentials
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
+// Provide Binance API keys to ccxt if present (allows higher rate or authenticated endpoints if later needed)
 const BINANCE_API_KEY = process.env.BINANCE_API_KEY;
 const BINANCE_SECRET = process.env.BINANCE_SECRET;
 
 if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-  console.warn("Warning: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID not set. Alerts will be skipped.");
+  console.warn("Warning: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID should be set in .env to receive alerts.");
 }
 
-// ==================== EXCHANGE ====================
+// ========================================
+// EXCHANGE SETUP
+// ========================================
 const exchange = new ccxt.binance({
   apiKey: BINANCE_API_KEY || undefined,
   secret: BINANCE_SECRET || undefined,
@@ -39,7 +39,7 @@ const exchange = new ccxt.binance({
   options: { defaultType: "future" },
 });
 
-// ==================== UTILITIES ====================
+// --- SAFE FETCH WITH RETRY ---
 async function safeFetch(exchangeInstance, method, ...args) {
   const maxRetries = 4;
   const baseDelay = 1500;
@@ -55,23 +55,22 @@ async function safeFetch(exchangeInstance, method, ...args) {
   }
 }
 
-async function fetchCandles(symbol, timeframe, limit = 400) {
+// --- FETCH OHLCV CANDLES ---
+async function fetchCandles(symbol, timeframe, limit = 200) {
   const raw = await safeFetch(exchange, exchange.fetchOHLCV, symbol, timeframe, undefined, limit);
   return raw.map((r) => ({ t: r[0], o: r[1], h: r[2], l: r[3], c: r[4], v: r[5] }));
 }
 
-function fmt(n) {
-  if (typeof n !== "number") return String(n);
-  if (n >= 1000) return n.toFixed(2);
-  return parseFloat(n.toFixed(6)).toString();
-}
-
-// ==================== TREND DETECTION (3-LAYER) ====================
+// ========================================
+// TREND DETECTION (3-LAYER)
+// ========================================
 function detectTrend(daily) {
   const closes = daily.map((c) => c.c);
+
   const needed = Math.max(...EMA_STACK);
   if (closes.length < needed) return { trend: "invalid", reason: "Not enough data" };
 
+  // --- EMA STACK ---
   const emaArr = {};
   EMA_STACK.forEach((p) => {
     try {
@@ -97,10 +96,12 @@ function detectTrend(daily) {
     return lastClose < lastEMAValue;
   });
 
+  // --- Structure check (HH/HL or LL/LH) ---
   const last5 = closes.slice(-6);
   const hhhl = last5.length >= 2 && last5.every((c, i, arr) => (i === 0 ? true : c > arr[i - 1]));
   const lllh = last5.length >= 2 && last5.every((c, i, arr) => (i === 0 ? true : c < arr[i - 1]));
 
+  // --- Momentum (EMA20 slope) ---
   const ema20 = emaArr[20] || [];
   const slope20 = ema20.length >= 2 ? ema20.slice(-1)[0] - ema20.slice(-2)[0] : 0;
   const bullishMomentum = slope20 > 0;
@@ -111,14 +112,15 @@ function detectTrend(daily) {
 
   const ema200 = (emaArr[200] && emaArr[200].length) ? emaArr[200].slice(-1)[0] : null;
 
-  if (bullishLayers >= 2) return { trend: "bull", ema200, layers: bullishLayers };
-  if (bearishLayers >= 2) return { trend: "bear", ema200, layers: bearishLayers };
+  if (bullishLayers >= 2) return { trend: "bull", ema200 };
+  if (bearishLayers >= 2) return { trend: "bear", ema200 };
 
-  // Not aligned - potential chop candidate; but we still return invalid so calling code can decide.
-  return { trend: "invalid", reason: "Layers not aligned", layers: { bullish: bullishLayers, bearish: bearishLayers } };
+  return { trend: "invalid", reason: "Layers not aligned" };
 }
 
-// ==================== HTF LEVEL DETECTION (OB/FVG) ====================
+// ========================================
+// HTF LEVEL DETECTION (OB/FVG) - BULL & BEAR
+// ========================================
 function detectOBFVG(candles, polarity = "bull") {
   const highs = candles.map((c) => c.h);
   const lows = candles.map((c) => c.l);
@@ -134,11 +136,13 @@ function detectOBFVG(candles, polarity = "bull") {
   const volSlice = vols.slice(-ATR_PERIOD);
   const volAvg = volSlice.reduce((a, b) => a + b, 0) / Math.max(1, volSlice.length);
 
+  // Walk backwards looking for a strong directional impulse matching polarity
   for (let i = candles.length - 2; i >= 1; i--) {
     const body = Math.abs(closes[i] - opens[i]);
     const isBullish = closes[i] > opens[i] && closes[i] > closes[i - 1];
     const isBearish = closes[i] < opens[i] && closes[i] < closes[i - 1];
     const volStrong = vols[i] >= volAvg * IMPULSE_VOLUME_FACTOR;
+    // require body > ATR and direction matching polarity, and volume impulse
     if (lastATR && body > lastATR && volStrong) {
       if (polarity === "bull" && isBullish) {
         return { obLow: candles[i].l, obHigh: candles[i].h, originIndex: i, strength: body / lastATR, type: "bull" };
@@ -151,7 +155,9 @@ function detectOBFVG(candles, polarity = "bull") {
   return null;
 }
 
-// ==================== VALIDATE RETEST ====================
+// ========================================
+// VALIDATE RETEST (NO LOOKAHEAD, REJECTION CHECK)
+// ========================================
 function validateRetest(intraday, zone, polarity = "bull") {
   const lookback = 10;
   const c = intraday;
@@ -174,8 +180,10 @@ function validateRetest(intraday, zone, polarity = "bull") {
   return null;
 }
 
-// ==================== ZONE COMPUTATION (BUY/SELL) ====================
-function computeBuyZone(daily, intraday) {
+// ========================================
+// COMPUTE BUY ZONE
+// ========================================
+function computeBuyZone(daily, intraday, trend) {
   const ob = detectOBFVG(intraday, "bull");
   if (!ob) return null;
 
@@ -198,7 +206,10 @@ function computeBuyZone(daily, intraday) {
   return { min: zoneMin, max: zoneMax, midpoint, strength: ob.strength };
 }
 
-function computeSellZone(daily, intraday) {
+// ========================================
+// COMPUTE SELL ZONE (mirror)
+// ========================================
+function computeSellZone(daily, intraday, trend) {
   const ob = detectOBFVG(intraday, "bear");
   if (!ob) return null;
 
@@ -224,7 +235,9 @@ function computeSellZone(daily, intraday) {
   return { min: zoneMin, max: zoneMax, midpoint, strength: ob.strength, retest: retest ? true : false };
 }
 
-// ==================== SL/TP CALCULATION ====================
+// ========================================
+// SL/TP CALCULATION
+// ========================================
 function computeSLTP(zone, trend) {
   if (!zone) return null;
   const sl = trend === "bull" ? zone.min * 0.995 : zone.max * 1.005;
@@ -239,139 +252,93 @@ function computeSLTP(zone, trend) {
   };
 }
 
-// ==================== CHOP DETECTION (symbol-aware) ====================
-function getChopParamsForSymbol(symbol) {
-  const defaults = {
-    bodyVsAtrFactor: 0.30,
-    weakMovementFactor: 0.20,
-    overlapReq: 4,
-    lookbackWindow: 8,
-    requireMinCandles: 30,
-    lowVolumeFactor: 0.8,
-  };
-
-  if (symbol && symbol.toUpperCase().startsWith("SOL")) {
-    return {
-      ...defaults,
-      bodyVsAtrFactor: 0.25,
-      weakMovementFactor: 0.18,
-      overlapReq: 3,
-      lookbackWindow: 8,
-      requireMinCandles: 30,
-      lowVolumeFactor: 0.9,
-    };
-  }
-
-  return defaults;
-}
-
-function isChop(candles, symbol = DEFAULT_SYMBOL) {
-  const params = getChopParamsForSymbol(symbol);
-
-  if (!candles || candles.length < params.requireMinCandles) return { isChop: false, reason: "insufficient candles" };
+// ========================================
+// CHOP DETECTION
+// ========================================
+function isChop(candles) {
+  // returns an object with diagnostic info and boolean isChop
+  if (candles.length < 30) return { isChop: false, reason: "insufficient candles" };
 
   const highs = candles.map((c) => c.h);
   const lows = candles.map((c) => c.l);
   const closes = candles.map((c) => c.c);
-  const opens = candles.map((c) => c.o);
-  const vols = candles.map((c) => c.v);
 
-  const atrArr = ATR.calculate({ high: highs, low: lows, close: closes, period: ATR_PERIOD });
+  const atrArr = ATR.calculate({
+    high: highs,
+    low: lows,
+    close: closes,
+    period: ATR_PERIOD
+  });
+
   if (!atrArr || atrArr.length < ATR_PERIOD) return { isChop: false, reason: "insufficient ATR" };
 
-  const N = params.lookbackWindow;
-  const lastN = candles.slice(-N);
-  const atrLastN = atrArr.slice(-N);
-  if (atrLastN.length < N) return { isChop: false, reason: "insufficient ATR slice" };
+  const last8 = candles.slice(-8);
+  const atrLast8 = atrArr.slice(-8);
+  if (atrLast8.length < 8) return { isChop: false, reason: "insufficient ATR slice" };
 
-  const atrAvg = atrLastN.reduce((a, b) => a + b, 0) / atrLastN.length;
+  const atrAvg = atrLast8.reduce((a, b) => a + b, 0) / atrLast8.length;
 
-  const bodySizes = lastN.map(c => Math.abs(c.c - c.o));
+  // Signal #1 — small bodies vs ATR
+  const bodySizes = last8.map(c => Math.abs(c.c - c.o));
   const avgBody = bodySizes.reduce((a, b) => a + b, 0) / bodySizes.length;
-  const condBodyVsAtr = (avgBody < params.bodyVsAtrFactor * atrAvg);
+  const condBodyVsAtr = (avgBody < 0.30 * atrAvg);
 
-  const netMove = Math.abs(lastN[lastN.length - 1].c - lastN[0].o);
-  const atrTotal = atrAvg * N;
-  const condWeakMovement = (netMove < params.weakMovementFactor * atrTotal);
+  // Signal #2 — weak directional progress
+  const netMove = Math.abs(last8[last8.length - 1].c - last8[0].o);
+  const atrTotal = atrAvg * 8;
+  const condWeakMovement = (netMove < 0.20 * atrTotal);
 
+  // Signal #3 — high overlap / indecision candles
   let overlapCount = 0;
-  for (let i = candles.length - N; i < candles.length - 1; i++) {
+  for (let i = candles.length - 8; i < candles.length - 1; i++) {
     const c1 = candles[i];
     const c2 = candles[i + 1];
     if (c2.h <= c1.h && c2.l >= c1.l) overlapCount++;
   }
-  const condOverlap = (overlapCount >= params.overlapReq);
+  const condOverlap = (overlapCount >= 4);
 
-  const volBaseline = vols.slice(-Math.max(50, N)).reduce((a, b) => a + b, 0) / Math.max(1, Math.min(50, vols.length));
-  const avgVolN = lastN.map(c => c.v).reduce((a, b) => a + b, 0) / lastN.length;
-  const condLowVolume = (avgVolN < volBaseline * params.lowVolumeFactor);
-
-  const conditions = [condBodyVsAtr, condWeakMovement, condOverlap, condLowVolume];
+  const conditions = [condBodyVsAtr, condWeakMovement, condOverlap];
   const chopScore = conditions.filter(Boolean).length;
-  const isChoppy = chopScore >= 2;
+  const isChop = chopScore >= 2;
 
-  const window = lastN;
+  // Choppiness range calculation (use last N candles range)
+  const RANGE_LOOKBACK = 8;
+  const window = candles.slice(-RANGE_LOOKBACK);
   const highest = Math.max(...window.map(c => c.h));
   const lowest = Math.min(...window.map(c => c.l));
   const rangeWidth = highest - lowest;
+  // Avoid division by zero
   const deviation = atrAvg > 0 ? rangeWidth / atrAvg : null;
 
   return {
-    isChop: isChoppy,
+    isChop,
     chopScore,
     conditions: {
       condBodyVsAtr,
       condWeakMovement,
       condOverlap,
-      condLowVolume,
     },
     atrAvg,
     rangeWidth,
     deviation,
     highest,
     lowest,
-    paramsUsed: params
   };
 }
 
-// ==================== FALLBACK ZONE (simple volatility zone) ====================
-function computeVolatilityZone(candles, atr) {
-  const last = candles[candles.length - 1];
-  const mid = last.c || ((last.o + last.h + last.l) / 3);
-  // Tuned multipliers — matches prior code's conservative zone sizing but independent
-  const upper = mid + atr * 2.4;
-  const lower = mid - atr * 2.4;
-  return { min: lower, max: upper, midpoint: mid, note: "volatility fallback zone" };
-}
 
-// ==================== STRENGTH CALCULATOR (real + fallback) ====================
-function computeRealStrengthFromOB(zone) {
-  // prefer zone.strength if provided (from OB detection)
-  if (!zone) return null;
-  if (zone.strength && typeof zone.strength === 'number') return zone.strength;
-  return null;
-}
 
-function computeStrength(realStrength, atr, price) {
-  if (realStrength && realStrength > 0) return Number(realStrength.toFixed(2));
-
-  // fallback: ATR as percentage of price -> continuity with CTWL approach
-  if (atr && price && price > 0) {
-    const fallback = (atr / price) * 100; // e.g. 0.5% -> 0.5
-    if (fallback > 0.6) return Number(fallback.toFixed(2));
-  }
-
-  // minimum guaranteed strength
-  return 0.80;
-}
-
-// ==================== TIME FILTER ====================
+// ========================================
+// TIME FILTER
+// ========================================
 function isInSniperWindow(ts = Date.now()) {
   const hourUTC = new Date(ts).getUTCHours();
   return ENTRY_WINDOWS_UTC.includes(hourUTC);
 }
 
-// ==================== TELEGRAM ====================
+// ========================================
+// TELEGRAM NOTIFIER (with retry)
+// ========================================
 async function sendTelegramMessage(text) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     console.warn("[telegram] Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID; skipping send.");
@@ -402,26 +369,34 @@ async function sendTelegramMessage(text) {
   }
 }
 
-// ==================== MESSAGES ====================
-function buildZoneMessage({ symbol, trend, zone, sltp, label, note, strength, mode }) {
+// Helper to pretty format numbers
+function fmt(n) {
+  if (typeof n !== "number") return String(n);
+  if (n >= 1000) return n.toFixed(2);
+  // show up to 6 decimals for small prices; trim trailing zeros
+  return parseFloat(n.toFixed(6)).toString();
+}
+
+// Build messages
+function buildZoneMessage({ symbol, trend, zone, sltp, label, note }) {
   const nowUTC = new Date().toISOString().replace("T", " ").replace("Z", " UTC");
   let msg = `*CTWL-Pro Alert*\n`;
   msg += `\n*Symbol:* ${symbol}\n*Trend:* ${trend ? trend.toUpperCase() : "N/A"}\n*When:* ${nowUTC}\n\n`;
   if (zone) {
-    msg += `*Mode:* ${mode || "SNIPER"}\n`;
     msg += `*Zone:* ${fmt(zone.min)} — ${fmt(zone.max)} (mid ${fmt(zone.midpoint)})\n`;
-    msg += `*Strength:* ${fmt(strength)}\n`;
+    msg += `*Strength:* ${zone.strength ? zone.strength.toFixed(2) : "n/a"}\n`;
     if (zone.retest) msg += `*Retest observed:* yes\n`;
-    if (note || zone.note) msg += `*Note:* ${note || zone.note}\n`;
+    if (note) msg += `*Note:* ${note}\n`;
     if (sltp) {
       msg += `\n*SL:* ${fmt(sltp.sl)}\n*TP1:* ${fmt(sltp.tp1)}   *TP2:* ${fmt(sltp.tp2)}   *TP3:* ${fmt(sltp.tp3)}\n`;
       msg += `*Estimated risk:* ${fmt(sltp.risk)}\n`;
     }
+    if (label) msg += `\n_${label}_\n`;
   } else {
-    msg += `*No zone computed.*\n`;
+    msg += `*No valid zone found.*\n`;
     if (note) msg += `*Note:* ${note}\n`;
+    if (label) msg += `\n_${label}_\n`;
   }
-  if (label) msg += `\n_${label}_\n`;
   msg += `\n_Source: CTWL-Pro (no lookahead enforced)_`;
   return msg;
 }
@@ -433,11 +408,13 @@ function buildStatusMessage({ symbol, reason, lastPrice, trendObj }) {
   if (trendObj) {
     msg += `*Trend state:* ${trendObj.trend || "N/A"}${trendObj.reason ? ` (${trendObj.reason})` : ""}\n`;
   }
-  msg += `\n_This is an automated status message._`;
+  msg += `\n_This is an automated status provided every 4H boundary._`;
   return msg;
 }
 
-// ==================== MAIN FUNCTION (symbol-agnostic) ====================
+// ========================================
+// MAIN EXECUTION
+// ========================================
 export async function runSOL() {
   try {
     await exchange.loadMarkets();
@@ -446,129 +423,76 @@ export async function runSOL() {
   }
 
   try {
-    const daily = await fetchCandles(symbol, TIMEFRAMES.daily, 400);
-    const intraday = await fetchCandles(symbol, TIMEFRAMES.intraday, 200);
+    const daily = await fetchCandles(SYMBOL, TIMEFRAMES.daily, 400);
+    const intraday = await fetchCandles(SYMBOL, TIMEFRAMES.intraday, 200);
 
+    // Determine last price (safe)
     const lastPrice = intraday && intraday.length ? intraday[intraday.length - 1].c : (daily && daily.length ? daily[daily.length - 1].c : null);
 
-    // --- CHOP DIAGNOSTIC (use daily by default) ---
-    const chopDiag = isChop(daily);
+    if (isChop(daily)) {
+      console.log("Market in chop — skipping zones.");
+      // Now: send status message (user requested always notify)
+      return;
+    }
 
-    // Decide trend
     const trendObj = detectTrend(daily);
-    let trend = trendObj.trend;
-    // If trend invalid and chop detected, label CHOP to make decision explicit
-    if (trend === "invalid" && chopDiag && chopDiag.isChop) {
-      trend = "chop";
+    const trend = trendObj.trend;
+    if (trend === "invalid") {
+      console.log("Trend invalid:", trendObj.reason);
+      // send status message
+      return;
     }
 
-    // Compute HTF OB / zones, but do NOT abort on chop - we ALWAYS compute a zone now
-    let zone = null;
-    let sltp = null;
-    // Try normal sniper zones first
+    // Time filter sanity (should always pass when scheduler aligned, but keep it)
+    const now = Date.now();
+    if (!isInSniperWindow(now)) {
+      console.log("Outside sniper entry window (redundant check) — skipping.");
+      return;
+    }
+
     if (trend === "bull") {
-      zone = computeBuyZone(daily, intraday);
-      if (zone) sltp = computeSLTP(zone, "bull");
-    } else if (trend === "bear") {
-      zone = computeSellZone(daily, intraday);
-      if (zone) sltp = computeSLTP(zone, "bear");
-    } else {
-      // Trend is 'chop' or unknown => compute fallback OB-based zone if possible, else volatility zone
-      // Try both sides: prefer buy or sell depending on last directional candle
-      const lastIntraday = intraday[intraday.length - 1];
-      const lastDir = lastIntraday && lastIntraday.c > lastIntraday.o ? "bull" : "bear";
-      if (lastDir === "bull") {
-        zone = computeBuyZone(daily, intraday);
-        if (!zone) {
-          // fallback: compute volatility zone from intraday candles
-          const highs = intraday.map((c) => c.h);
-          const lows = intraday.map((c) => c.l);
-          const closes = intraday.map((c) => c.c);
-          const atrArr = ATR.calculate({ high: highs, low: lows, close: closes, period: ATR_PERIOD });
-          const atr = atrArr.slice(-1)[0] || 0;
-          zone = computeVolatilityZone(intraday, atr);
-        } else {
-          sltp = computeSLTP(zone, "bull");
-        }
+      const zone = computeBuyZone(daily, intraday, trend);
+      const sltp = computeSLTP(zone, "bull");
+      if (!zone) {
+        console.log("No valid buy origin/OB found — waiting for impulse.");
+       
       } else {
-        zone = computeSellZone(daily, intraday);
-        if (!zone) {
-          const highs = intraday.map((c) => c.h);
-          const lows = intraday.map((c) => c.l);
-          const closes = intraday.map((c) => c.c);
-          const atrArr = ATR.calculate({ high: highs, low: lows, close: closes, period: ATR_PERIOD });
-          const atr = atrArr.slice(-1)[0] || 0;
-          zone = computeVolatilityZone(intraday, atr);
-        } else {
-          sltp = computeSLTP(zone, lastDir === "bull" ? "bull" : "bear");
-        }
+        console.log("=== CTWL-Pro BUY OUTPUT ===");
+        console.log({ symbol: SYMBOL, trend, zone, sltp });
+        const msg = buildZoneMessage({ symbol: SYMBOL, trend, zone, sltp, label: "VALID BUY ZONE" });
+        await sendTelegramMessage(msg);
       }
+    } else if (trend === "bear") {
+      console.log("Trend appears BEAR. Measuring sell-side...");
+      const zone = computeSellZone(daily, intraday, trend);
+      const sltp = computeSLTP(zone, "bear");
+      if (!zone) {
+        console.log("No valid sell origin/OB found — measuring continues.");
+      
+      } else {
+        const label = zone.retest ? "VALID SELL ZONE (retest observed)" : "VALID SELL ZONE (no retest)";
+        console.log("=== CTWL-Pro SELL OUTPUT ===");
+        console.log(label);
+        console.log({ symbol: SYMBOL, trend, zone, sltp });
+        const msg = buildZoneMessage({ symbol: SYMBOL, trend, zone, sltp, label, note: zone.note });
+        await sendTelegramMessage(msg);
+      }
+    } else {
+      console.log("Unhandled trend state:", trend);
     }
-
-    // Compute ATR for strength fallback
-    const highsAll = intraday.map((c) => c.h);
-    const lowsAll = intraday.map((c) => c.l);
-    const closesAll = intraday.map((c) => c.c);
-    const atrArrAll = ATR.calculate({ high: highsAll, low: lowsAll, close: closesAll, period: ATR_PERIOD });
-    const atrLatest = atrArrAll.slice(-1)[0] || 0;
-
-    // Compute strength (real first)
-    const realStrength = computeRealStrengthFromOB(zone);
-    const strength = computeStrength(realStrength, atrLatest, lastPrice || (closesAll[closesAll.length - 1] || 1));
-
-    // Determine mode: SNIPER vs CHOP
-    // Sniper if trend is bull|bear (not invalid/chop) AND strength >= threshold
-    const SNIPER_MIN = Number(process.env.CTWL_SNIPER_MIN) || 1.4;
-    let mode = "SNIPER";
-    if (!zone || trend === "chop" || trend === "invalid" || strength < SNIPER_MIN || (chopDiag && chopDiag.isChop)) {
-      mode = "CHOP";
-    }
-
-    // Build message and send ALWAYS (your requirement)
-    const label = mode === "SNIPER" ? (trend === "bull" ? "VALID BUY ZONE" : "VALID SELL ZONE") : "CHOP MODE ZONE";
-    const noteParts = [];
-    if (chopDiag && chopDiag.isChop) {
-      noteParts.push(`CHOP DETECTED (score=${chopDiag.chopScore})`);
-    }
-    if (zone && zone.note) noteParts.push(zone.note);
-    const note = noteParts.join(" | ") || undefined;
-
-    const msg = buildZoneMessage({
-      symbol,
-      trend,
-      zone,
-      sltp,
-      label,
-      note,
-      strength,
-      mode
-    });
-
-    // Send message (will be sent for CHOP and SNIPER)
-    await sendTelegramMessage(msg);
-    console.log(`[CTWL-Pro] Sent ${mode} message for ${symbol} | strength=${fmt(strength)} | trend=${trend}`);
-
-    // Optionally send a status message (every run) - helpful for debugging
-    const statusReason = mode === "SNIPER" ? "SNIPER signal emitted" : "CHOP mode signal emitted";
-    const statusMsg = buildStatusMessage({ symbol, reason: statusReason, lastPrice, trendObj });
-    await sendTelegramMessage(statusMsg);
-
-    return {
-      symbol,
-      trend,
-      mode,
-      zone,
-      sltp,
-      strength,
-      chopDiag
-    };
   } catch (err) {
     console.error("CTWL-Pro ERROR:", err.message || err);
+    // Attempt to send the error to telegram if configured
     try {
       await sendTelegramMessage(`CTWL-Pro ERROR: ${err.message || JSON.stringify(err)}`);
-    } catch (e) { /* swallow */ }
-    throw err;
+    } catch (e) {
+      // swallow
+    }
   }
 }
 
+
+// ==========
+// Allow module usage too: default immediate start
+// NOTE: this will run scheduler automatically when file is imported/run without flags
 

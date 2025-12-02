@@ -238,7 +238,7 @@ return ENTRY_WINDOWS_UTC.includes(hourUTC);
 // ---------- Telegram ----------
 async function sendTelegramMessage(text) {
 if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
-const url = "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage";
+const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
 const payload = { chat_id: TELEGRAM_CHAT_ID, text, parse_mode: "Markdown" };
 for (let i = 1; i <= 3; i++) {
 try {
@@ -260,7 +260,7 @@ function buildZoneMessage({ symbol, trend, zone, sltp, label, note }) {
 const nowUTC = new Date().toISOString().replace("T", " ").replace("Z", " UTC");
 let msg = "*CTWL-Pro ETH Alert*\n\n*Symbol:* ${symbol}\n*Trend:* ${trend.toUpperCase()}\n*When:* ${nowUTC}\n\n";
 msg += "*Zone:* ${fmt(zone.min)} — ${fmt(zone.max)} (mid ${fmt(zone.midpoint)})\n";
-msg += "*Strength:* ${zone.strength ? zone.strength.toFixed(2) : "n/a"}\n";
+msg += `*Strength:* ${zone.strength ? zone.strength.toFixed(2) : "n/a"}\n`;
 if (zone.retest) msg += "Retest observed: yes\n";
 if (zone.sweep) msg += "Liquidity sweep observed: yes\n";
 if (note) msg += "*Note:* ${note}\n";
