@@ -35,7 +35,6 @@ app.get('/run', (req, res) => {
 
 app.get('/cron/run', (req, res) => {
   res.send('ok');
-  process.nextTick(() => runBotsSilent());
 });
 
 // ----------------------
@@ -55,7 +54,7 @@ function startInternalLoop() {
     } catch (err) {
       console.error("Loop error:", err);
     }
-  }, 20* 1000); // 1 minute
+  }, 60*60* 1000); // 1 minute
 }
 
 // Start loop immediately
