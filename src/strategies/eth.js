@@ -258,15 +258,15 @@ function fmt(n) { return typeof n !== "number" ? String(n) : n >= 1000 ? n.toFix
 
 function buildZoneMessage({ symbol, trend, zone, sltp, label, note }) {
 const nowUTC = new Date().toISOString().replace("T", " ").replace("Z", " UTC");
-let msg = "*CTWL-Pro ETH Alert*\n\n*Symbol:* ${symbol}\n*Trend:* ${trend.toUpperCase()}\n*When:* ${nowUTC}\n\n";
-msg += "*Zone:* ${fmt(zone.min)} — ${fmt(zone.max)} (mid ${fmt(zone.midpoint)})\n";
+let msg = `*CTWL-Pro ETH Alert*\n\n*Symbol:* ${symbol}\n*Trend:* ${trend.toUpperCase()}\n*When:* ${nowUTC}\n\n`;
+msg += `*Zone:* ${fmt(zone.min)} — ${fmt(zone.max)} (mid ${fmt(zone.midpoint)})\n`;
 msg += `*Strength:* ${zone.strength ? zone.strength.toFixed(2) : "n/a"}\n`;
-if (zone.retest) msg += "Retest observed: yes\n";
-if (zone.sweep) msg += "Liquidity sweep observed: yes\n";
-if (note) msg += "*Note:* ${note}\n";
-if (sltp) msg += "\n*SL:* ${fmt(sltp.sl)}\n*TP1:* ${fmt(sltp.tp1)}   *TP2:* ${fmt(sltp.tp2)}   *TP3:* ${fmt(sltp.tp3)}\n*Estimated risk:* ${fmt(sltp.risk)}\n";
-if (label) msg += "\n_${label}_\n";
-msg += "\n_Source: CTWL-Pro ETH (1H-dominant)_";
+if (zone.retest) msg += `Retest observed: yes\n`;
+if (zone.sweep) msg += `Liquidity sweep observed: yes\n`;
+if (note) msg += `*Note:* ${note}\n`;
+if (sltp) msg += `\n*SL:* ${fmt(sltp.sl)}\n*TP1:* ${fmt(sltp.tp1)}   *TP2:* ${fmt(sltp.tp2)}   *TP3:* ${fmt(sltp.tp3)}\n*Estimated risk:* ${fmt(sltp.risk)}\n`;
+if (label) msg += `\n_${label}_\n`;
+msg += `\n_Source: CTWL-Pro ETH (1H-dominant)_`;
 return msg;
 }
 
