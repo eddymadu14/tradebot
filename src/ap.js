@@ -12,7 +12,7 @@ import { runCTWL1H_PREDICT_ETH } from "./ctwl/ethtele.js";
 // DELAY HELPER (5 mins)
 // ======================
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const FIVE_MINUTES = 5 * 60 * 1000;
+const FIVE_MINUTES = 2 * 60 * 1000;
 
 const SYMBOL = "BTC/USDT";
 
@@ -20,12 +20,7 @@ export async function startBots() {
   try {
     console.log("🚀 Starting bot cycle...");
 
-    await runBTCin(SYMBOL);
-    await delay(FIVE_MINUTES);
-
-    await runethatr();
-    await delay(FIVE_MINUTES);
-
+  
     const btcRes = await runCTWL1H_PREDICT("BTCUSDT");
     console.log("CTWL BTC RESULT ↓↓↓");
     console.log(JSON.stringify(btcRes, null, 2));
@@ -35,8 +30,14 @@ export async function startBots() {
     const ethRes = await runCTWL1H_PREDICT_ETH("ETHUSDT");
     console.log("CTWL ETH RESULT ↓↓↓");
     console.log(JSON.stringify(ethRes, null, 2));
+    await delay(FIVE_MINUTES);
 
-    console.log("✅ Bot cycle completed.");
+    await runBTCin(SYMBOL);
+    await delay(FIVE_MINUTES);
+
+    await runethatr();
+
+  console.log("✅ Bot cycle completed.");
   } catch (err) {
     console.error("❌ Bot cycle failed:", err.message);
   }

@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 import express from 'express';
-import { startBots } from './ap.js';
+import { startBots } from './app.js';
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -55,7 +55,7 @@ function startInternalLoop() {
     } catch (err) {
       console.error("Loop error:", err);
     }
-  }, 100* 1000); // 1 minute
+  }, 40 * 1000); // 1 minute
 }
 
 // Start loop immediately

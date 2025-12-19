@@ -1,25 +1,41 @@
 // app.js
-import { runBTC } from "./strategies/btc.js";
-//import { runSUI } from "./strategies/sui1.js";
-import { runSOL } from "./strategies/sol.js";
-import { runBTC1h } from "./strategies/btc1h.js";
-import { runSOL1h } from "./strategies/sol1h.js";
-//import { runBTCatr } from "./strategies/btcatr.js";
-//import { runBTCltf } from "./strategies/btcltf.js";
-import { runethfast } from "./strategies/ethfast.js";
+
+import { runSOLatr } from "./strategies/solatr.js";
+import { runBTCatr } from "./strategies/btcatr.js";
 import { runeth } from "./strategies/eth.js";
-//import { runethatr } from "./strategies/ethatr.js";
-// ---------------- BOT EXECUTION ----------------
+import { runBTCin } from "./strategies/btcin.js";
+import { runethatr } from "./strategies/ethatr.js";
+import { runCTWL1H_PREDICT } from "./ctwl/btctele.js";
+import { runCTWL1H_PREDICT_ETH } from "./ctwl/ethtele.js";
+
+// ======================
+// DELAY HELPER (5 mins)
+// ======================
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const FIVE_MINUTES = 30 * 1000;
+
+const SYMBOL = "BTC/USDT";
 
 export async function startBots() {
   try {
     console.log("🚀 Starting bot cycle...");
-   await runBTC();
-   await runeth();
-    await runSOL();
-   await runethfast();
-//await runethatr(); 
-//await runBTCatr();
+
+    await runBTCin(SYMBOL);
+    await delay(FIVE_MINUTES);
+
+    await runethatr();
+    await delay(FIVE_MINUTES);
+
+    const btcRes = await runCTWL1H_PREDICT("BTCUSDT");
+    console.log("CTWL BTC RESULT ↓↓↓");
+    console.log(JSON.stringify(btcRes, null, 2));
+
+    await delay(FIVE_MINUTES);
+
+    const ethRes = await runCTWL1H_PREDICT_ETH("ETHUSDT");
+    console.log("CTWL ETH RESULT ↓↓↓");
+    console.log(JSON.stringify(ethRes, null, 2));
+
     console.log("✅ Bot cycle completed.");
   } catch (err) {
     console.error("❌ Bot cycle failed:", err.message);
