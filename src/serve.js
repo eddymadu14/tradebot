@@ -55,7 +55,7 @@ function startInternalLoop() {
     } catch (err) {
       console.error("Loop error:", err);
     }
-  }, 20* 1000); // 1 minute
+  }, 100* 1000); // 1 minute
 }
 
 // Start loop immediately
