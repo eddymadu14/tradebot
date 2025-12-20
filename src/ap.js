@@ -6,6 +6,7 @@ import { runeth } from "./strategies/eth.js";
 import { runBTCin } from "./strategies/btcin.js";
 import { runethatr } from "./strategies/ethatr.js";
 import { runCTWL1H_PREDICT } from "./ctwl/btctele.js";
+import { runBTCmod1 } from "./strategies/btcmod1.js";
 import { runCTWL1H_PREDICT_ETH } from "./ctwl/ethtele.js";
 
 // ======================
@@ -33,6 +34,9 @@ export async function startBots() {
     await delay(FIVE_MINUTES);
 
     await runBTCin(SYMBOL);
+    await delay(FIVE_MINUTES);
+
+    await runBTCmod1(SYMBOL);
     await delay(FIVE_MINUTES);
 
     await runethatr();
