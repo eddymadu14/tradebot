@@ -12,7 +12,7 @@ import { runCTWL1H_PREDICT_ETH } from "./ctwl/ethtele.js";
 // DELAY HELPER (5 mins)
 // ======================
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const FIVE_MINUTES = 30 * 1000;
+const FIVE_MINUTES = 2 * 1000;
 
 const SYMBOL = "BTC/USDT";
 

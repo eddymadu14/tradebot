@@ -39,26 +39,24 @@ app.get('/cron/run', (req, res) => {
 });
 
 // ----------------------
-// INTERNAL LOOP
+// INTERNAL SINGLE-RUN EXECUTION
 // ----------------------
-let isLoopRunning = false;
+let hasRun = false;
 
-function startInternalLoop() {
-  if (isLoopRunning) return;
-  isLoopRunning = true;
+async function startInternalLoop() {
+  if (hasRun) return;
+  hasRun = true;
 
-  console.log("🔁 Internal CTWL loop started…");
+  console.log("▶️ Internal CTWL single-run started…");
 
-  setInterval(async () => {
-    try {
-      await startBots();   // <-- Runs EVERY 60 seconds
-    } catch (err) {
-      console.error("Loop error:", err);
-    }
-  }, 40 * 1000); // 1 minute
+  try {
+    await startBots(); // Runs ONCE immediately
+  } catch (err) {
+    console.error("Single-run error:", err);
+  }
 }
 
-// Start loop immediately
+// Run immediately on startup
 startInternalLoop();
 
 // ----------------------

@@ -20,7 +20,7 @@ export async function startBots() {
   try {
     console.log("🚀 Starting bot cycle...");
 
-  
+    await delay(FIVE_MINUTES);  
     const btcRes = await runCTWL1H_PREDICT("BTCUSDT");
     console.log("CTWL BTC RESULT ↓↓↓");
     console.log(JSON.stringify(btcRes, null, 2));

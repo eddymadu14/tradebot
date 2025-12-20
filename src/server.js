@@ -38,7 +38,7 @@ app.get('/cron/run', (req, res) => {
 });
 
 // ----------------------
-// INTERNAL LOOP
+// INTERNAL LOOP (UTC HOURLY)
 // ----------------------
 let isLoopRunning = false;
 
@@ -46,18 +46,40 @@ function startInternalLoop() {
   if (isLoopRunning) return;
   isLoopRunning = true;
 
-  console.log("🔁 Internal CTWL loop started…");
+  console.log("🔁 Internal CTWL UTC hourly loop started…");
 
-  setInterval(async () => {
+  const run = async () => {
     try {
-      await startBots();   // <-- Runs EVERY 60 seconds
+      await startBots();
     } catch (err) {
       console.error("Loop error:", err);
     }
-  }, 60*60* 1000); // 1 minute
+  };
+
+  // Align to next UTC hour
+  const now = new Date();
+  const nextHourUTC = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    now.getUTCHours() + 1,
+    0,
+    0,
+    0
+  ));
+
+  const delay = nextHourUTC - now;
+
+  // First run exactly at next UTC hour
+  setTimeout(() => {
+    run();
+
+    // Then run every 1 hour UTC
+    setInterval(run, 60 * 60 * 1000);
+  }, delay);
 }
 
-// Start loop immediately
+// Start scheduler
 startInternalLoop();
 
 // ----------------------
