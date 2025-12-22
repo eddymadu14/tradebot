@@ -20,6 +20,9 @@ const ZONE_ATR_PAD = { min: 0.15, max: 0.15 };
 const SNIPER_WINDOW_STRICT = false;
 const ENTRY_WINDOWS_UTC = [0, 4, 8, 12, 16, 20];
 
+// 🔴 EXECUTION THRESHOLD
+const MIN_TELEGRAM_STRENGTH = 2.4;
+
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const BINANCE_API_KEY = process.env.BINANCE_API_KEY;
@@ -256,7 +259,7 @@ export async function runethatr(){
     let zone=null;
     if(trend==="bull") zone=computeBuyZone(intraday1h);
     if(trend==="bear") zone=computeSellZone(intraday1h);
-    if(!zone) return console.log(`[${new Date().toISOString()}] No valid zone found.`);
+    if(!zone|| zone.strength < MIN_TELEGRAM_STRENGTH) return console.log(`[${new Date().toISOString()}] No valid zone found. Skipped Telegram — strength=${zone.strength.toFixed(2)}`);
 
     if(isChop(intraday1h)) return console.log(`[${new Date().toISOString()}] Market choppy. Skipping.`);
 
