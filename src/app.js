@@ -78,7 +78,12 @@ export async function startBots() {
     await runethatr();
     await delay(FIVE_MINUTES);
 
-    const btcRes = await runCTWL1H_PREDICT("BTCUSDT");
+    await import("./strategies/xmrmain.js");
+    await delay(FIVE_MINUTES);  
+
+    await import("./strategies/xmrtrend.js");
+    await delay(FIVE_MINUTES);
+/*    const btcRes = await runCTWL1H_PREDICT("BTCUSDT");
     console.log("CTWL BTC RESULT ↓↓↓");
     console.log(JSON.stringify(btcRes, null, 2));
 
@@ -87,7 +92,7 @@ export async function startBots() {
     const ethRes = await runCTWL1H_PREDICT_ETH("ETHUSDT");
     console.log("CTWL ETH RESULT ↓↓↓");
     console.log(JSON.stringify(ethRes, null, 2));
-
+*/
    
     console.log("✅ Bot cycle completed.");
   } catch (err) {

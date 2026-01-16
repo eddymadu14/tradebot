@@ -21,7 +21,7 @@ export async function startBots() {
   try {
     console.log("🚀 Starting bot cycle...");
 
-    await delay(FIVE_MINUTES);  
+  /*  await delay(FIVE_MINUTES);  
     const btcRes = await runCTWL1H_PREDICT("BTCUSDT");
     console.log("CTWL BTC RESULT ↓↓↓");
     console.log(JSON.stringify(btcRes, null, 2));
@@ -32,7 +32,7 @@ export async function startBots() {
     console.log("CTWL ETH RESULT ↓↓↓");
     console.log(JSON.stringify(ethRes, null, 2));
     await delay(FIVE_MINUTES);
-
+ */
     await runBTCin(SYMBOL);
     await delay(FIVE_MINUTES);
 
@@ -40,6 +40,13 @@ export async function startBots() {
     await delay(FIVE_MINUTES);
 
     await runethatr();
+    await delay(FIVE_MINUTES);
+
+   // await import("./strategies/xmrmain.js");
+   // await delay(FIVE_MINUTES);
+
+   // await import("./strategies/xmrtrend.js");
+  
 
   console.log("✅ Bot cycle completed.");
   } catch (err) {
