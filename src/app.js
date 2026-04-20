@@ -72,8 +72,8 @@ export async function startBots() {
     await runBTCin(SYMBOL);
     await delay(FIVE_MINUTES);
 
-   // await runBTCmod1(SYMBOL);
-    //await delay(FIVE_MINUTES);
+    await runBTCmod1(SYMBOL);
+    await delay(FIVE_MINUTES);
 
     await runethatr();
     await delay(FIVE_MINUTES);
