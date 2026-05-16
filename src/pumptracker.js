@@ -9,7 +9,7 @@ const BASE_URL = "https://fapi.binance.com";
 const CONCURRENCY = 8;
 const INTERVAL = "5m";
 const LOOKBACK = 50;
-const MIN_24H_VOLUME = 20_000_000; // 20M USDT
+const MIN_24H_VOLUME = 40_000_000; // 20M USDT
 const TOP_RESULTS = 15;
 const LOOP_MS = 30_000;
 
