@@ -1,0 +1,221 @@
+import crypto from "crypto";
+import pkg from "elliptic";
+import fs from "fs";
+const { ec: EC } = pkg;
+const ec = new EC("secp256k1");
+
+const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const PROGRESS_FILE = "scanner_progress.json";
+
+// ---------------- BASE58 ENCODE ----------------
+function base58Encode(buffer) {
+    let num = BigInt("0x" + buffer.toString("hex"));
+    let result = "";
+    while (num > 0n) {
+        const rem = num % 58n;
+        num = num / 58n;
+        result = BASE58_ALPHABET[Number(rem)] + result;
+    }
+    for (let i = 0; i < buffer.length && buffer[i] === 0; i++) {
+        result = "1" + result;
+    }
+    return result;
+}
+
+// ---------------- HASH FUNCTIONS ----------------
+function sha256(data) {
+    return crypto.createHash("sha256").update(data).digest();
+}
+
+function ripemd160(data) {
+    return crypto.createHash("ripemd160").update(data).digest();
+}
+
+// ---------------- PRIVATE KEY → ADDRESS ----------------
+function privateKeyToLegacyAddress(privateKeyHex) {
+    const keyPair = ec.keyFromPrivate(privateKeyHex);
+    const pubPoint = keyPair.getPublic();
+    const publicKey = Buffer.from(pubPoint.encodeCompressed());
+
+    const sha = sha256(publicKey);
+    const pubKeyHash = ripemd160(sha);
+    const versionedPayload = Buffer.concat([Buffer.from([0x00]), pubKeyHash]);
+    const checksum = sha256(sha256(versionedPayload)).subarray(0, 4);
+    const fullPayload = Buffer.concat([versionedPayload, checksum]);
+
+    return base58Encode(fullPayload);
+}
+
+// ---------------- RANDOM BIGINT IN RANGE ----------------
+function randomBigIntInRange(min, max) {
+    const range = max - min + 1n;
+    const byteLength = Math.ceil(range.toString(16).length / 2);
+    let rand;
+    do {
+        const randBytes = crypto.randomBytes(byteLength);
+        rand = BigInt("0x" + randBytes.toString("hex"));
+    } while (rand >= range);
+    return min + rand;
+}
+
+// ---------------- SKIP FILTER: >2 repeating chars ----------------
+function hasExcessiveRepeats(address) {
+    // Skip the leading "1" version prefix before checking
+    const body = address.slice(1);
+    let count = 1;
+    for (let i = 1; i < body.length; i++) {
+        if (body[i] === body[i - 1]) {
+            count++;
+            if (count > 2) return true;
+        } else {
+            count = 1;
+        }
+    }
+    return false;
+}
+
+// ---------------- PROGRESS MEMORY ----------------
+function loadProgress(startHex, endHex, targetAddress) {
+    if (fs.existsSync(PROGRESS_FILE)) {
+        try {
+            const data = JSON.parse(fs.readFileSync(PROGRESS_FILE, "utf8"));
+            // Only restore if same session (same range + target)
+            if (
+                data.startHex === startHex &&
+                data.endHex === endHex &&
+                data.targetAddress === targetAddress
+            ) {
+                console.log(`\n📂 Resuming previous session:`);
+                console.log(`   Already checked : ${BigInt(data.checked).toLocaleString()} keys`);
+                console.log(`   Already skipped : ${BigInt(data.skipped).toLocaleString()} keys`);
+                console.log(`   Visited keys    : ${data.visited.length.toLocaleString()} stored\n`);
+                return {
+                    checked: BigInt(data.checked),
+                    skipped: BigInt(data.skipped),
+                    visited: new Set(data.visited),
+                };
+            }
+        } catch {
+            console.log("⚠️  Progress file corrupted, starting fresh.\n");
+        }
+    }
+    return { checked: 0n, skipped: 0n, visited: new Set() };
+}
+
+function saveProgress(startHex, endHex, targetAddress, checked, skipped, visited) {
+    const data = {
+        startHex,
+        endHex,
+        targetAddress,
+        checked: checked.toString(),
+        skipped: skipped.toString(),
+        visited: [...visited],
+        savedAt: new Date().toISOString(),
+    };
+    fs.writeFileSync(PROGRESS_FILE, JSON.stringify(data, null, 2));
+}
+
+// ---------------- RANGE SCANNER ----------------
+async function scanRange(startHex, endHex, targetAddress) {
+    const start = BigInt("0x" + startHex);
+    const end = BigInt("0x" + endHex);
+    const rangeSize = end - start + 1n;
+
+    // Load memory
+    let { checked, skipped, visited } = loadProgress(startHex, endHex, targetAddress);
+
+    console.log(`\n🔍 Scanner started:`);
+    console.log(`   Start  : ${startHex}`);
+    console.log(`   End    : ${endHex}`);
+    console.log(`   Target : ${targetAddress}`);
+    console.log(`   Range  : ${rangeSize.toLocaleString()} keys\n`);
+
+    const startTime = Date.now();
+    const saveEvery = 5000n;
+    const logEvery = 10000n;
+
+    while (true) {
+        // Stop if all keys in range have been visited
+        if (visited.size >= Number(rangeSize)) {
+            console.log(`\n🏁 Entire range exhausted after ${checked.toLocaleString()} checks.`);
+            console.log(`   No match found for: ${targetAddress}`);
+            break;
+        }
+
+        // Pick a random key in range, skip already visited
+        let privKeyHex;
+        let candidate;
+        do {
+            candidate = randomBigIntInRange(start, end);
+            privKeyHex = candidate.toString(16).padStart(64, "0");
+        } while (visited.has(privKeyHex));
+
+        visited.add(privKeyHex);
+
+        // Derive address
+        const address = privateKeyToLegacyAddress(privKeyHex);
+
+        // Skip addresses with excessive repeating characters
+        if (hasExcessiveRepeats(address)) {
+            skipped++;
+            continue;
+        }
+
+        checked++;
+
+        // Check for match
+        if (address === targetAddress) {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+            console.log(`\n✅ MATCH FOUND!`);
+            console.log(`   Private Key : ${privKeyHex}`);
+            console.log(`   Address     : ${address}`);
+            console.log(`   Checked     : ${checked.toLocaleString()} keys`);
+            console.log(`   Skipped     : ${skipped.toLocaleString()} keys`);
+            console.log(`   Time        : ${elapsed}s`);
+
+            // Clear progress on success
+            if (fs.existsSync(PROGRESS_FILE)) fs.unlinkSync(PROGRESS_FILE);
+            return privKeyHex;
+        }
+
+        // Progress log
+        if (checked % logEvery === 0n) {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+            const rate = Math.floor(Number(checked) / Number(elapsed));
+            console.log(
+                `   Checked: ${checked.toLocaleString()} | ` +
+                `Skipped: ${skipped.toLocaleString()} | ` +
+                `Speed: ${rate.toLocaleString()} keys/s | ` +
+                `Visited: ${visited.size.toLocaleString()}`
+            );
+        }
+
+        // Save progress periodically
+        if (checked % saveEvery === 0n) {
+            saveProgress(startHex, endHex, targetAddress, checked, skipped, visited);
+        }
+
+        // Yield to event loop
+        if ((checked + skipped) % 1000n === 0n) {
+            await new Promise(resolve => setImmediate(resolve));
+        }
+    }
+
+    // Final save on exit
+    saveProgress(startHex, endHex, targetAddress, checked, skipped, visited);
+    return null;
+}
+
+// Graceful shutdown — save on CTRL+C
+process.on("SIGINT", () => {
+    console.log("\n\n⚠️  Interrupted! Progress has been auto-saved to scanner_progress.json");
+    console.log("   Restart the script to resume from where you left off.\n");
+    process.exit(0);
+});
+
+// ---------------- EXAMPLE ----------------
+const START_HEX  = "0000000000000000000000000000000000000000000000400000000000000000";
+const END_HEX    = "00000000000000000000000000000000000000000000007fffffffffffffffff";
+const TARGET_ADR = "1PWo3JeB9jrGwfHDNpdGK54CRas7fsVzXU";
+
+scanRange(START_HEX, END_HEX, TARGET_ADR);

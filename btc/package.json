@@ -1,0 +1,22 @@
+{
+  "name": "btc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "btc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@noble/hashes": "^2.2.0",
+    "@noble/secp256k1": "^3.1.0",
+    "@scure/bip32": "^2.2.0",
+    "bip39": "^3.1.0",
+    "bs58": "^6.0.0",
+    "bs58check": "^4.0.0",
+    "elliptic": "^6.6.1"
+  }
+}
