@@ -2,10 +2,10 @@ import axios from "axios";
 import pLimit from "p-limit";
 
 const BASE_URL = "https://fapi.binance.com";
-const INTERVAL = "1w";
+const INTERVAL = "4h";
 const LOOKBACK = 60;
 const CONCURRENCY = 8;
-const MIN_VOLUME_USDT = 5_000_000;
+const MIN_VOLUME_USDT = 20_000_000;
 const limit = pLimit(CONCURRENCY);
 
 let scannedCount = 0;

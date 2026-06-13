@@ -28,7 +28,7 @@ const CONCURRENCY = 8;
 
 const MIN_VOLUME = 20_000_000;
 const THRESHOLD = 5;
-const WICK_TOLERANCE = 0.05;
+const WICK_TOLERANCE = 0.2;
 
 const limit = pLimit(CONCURRENCY);
 
