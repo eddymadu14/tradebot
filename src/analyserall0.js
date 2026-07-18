@@ -52,7 +52,7 @@ const CONCURRENCY = 5;
 const MIN_PROBABILITY = 85;
 
 // NEW: LIQUIDITY FILTER
-const MIN_24H_VOLUME = 40_000_000;
+const MIN_24H_VOLUME = 4_000_000;
 
 // ==========================================================
 // HELPERS

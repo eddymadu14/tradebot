@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const SYMBOL = process.argv[2] || "BTCUSDT";
-const INTERVAL = "1d";
+const INTERVAL = "4h";
 const LIMIT = 200;
 
 const BASE_URL = "https://fapi.binance.com";
@@ -93,7 +93,8 @@ async function main() {
         const stats = calculateWickStats(candles);
 
         console.log("\n==============================");
-        console.log("BTC Futures Wick Analysis");
+        console.log(
+        `${SYMBOL} 4H WICK ANALYSIS` );
         console.log("==============================\n");
 
         console.log(`Bullish Candles Analysed: ${stats.bullish.length}`);

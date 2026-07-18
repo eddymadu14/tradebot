@@ -8,7 +8,7 @@ import pLimit from "p-limit";
 const BASE_URL = "https://fapi.binance.com";
 const CONCURRENCY = 8;
 
-const MIN_24H_VOLUME = 4_000_000;
+const MIN_24H_VOLUME = 1_000_000;
 const TOP_RESULTS = 15;
 const LOOP_MS = 60_000;
 

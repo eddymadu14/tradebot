@@ -9,7 +9,7 @@ const BASE_URL = "https://fapi.binance.com";
 const CONCURRENCY = 8;
 const INTERVAL = "5m";
 const LOOKBACK = 50;
-const MIN_24H_VOLUME = 10_000_000; // 20M USDT
+const MIN_24H_VOLUME = 100_000; // 20M USDT
 const TOP_RESULTS = 15;
 const LOOP_MS = 30_000;
 
@@ -211,7 +211,7 @@ async function runScanner() {
 
       const results = (await Promise.all(jobs))
         .filter(Boolean)
-        .filter((x) => Number(x.score) >= 45)
+        .filter((x) => Number(x.score) >= 58)
         .sort((a, b) => Number(b.score) - Number(a.score))
         .slice(0, TOP_RESULTS);
 

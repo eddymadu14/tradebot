@@ -1,0 +1,1198 @@
+=========== WICK CONSISTENCY REPORT ===========
+
+PAIR : USELESSUSDT
+
+Bullish Lower Wicks
+
+Samples : 16
+Average : 1.364%
+Median  : 1.254%
+Minimum : 0.354%
+Maximum : 2.938%
+Std Dev : 0.790
+CV      : 0.579
+
+Bearish Upper Wicks
+
+Samples : 24
+Average : 1.686%
+Median  : 1.582%
+Minimum : 0.085%
+Maximum : 3.631%
+Std Dev : 1.114
+CV      : 0.661
+
+Overall Score : 0.620
+
+------------------------------------------------------------
+
+PAIR : ALGOUSDT
+
+Bullish Lower Wicks
+
+Samples : 19
+Average : 0.463%
+Median  : 0.472%
+Minimum : 0.000%
+Maximum : 1.196%
+Std Dev : 0.298
+CV      : 0.644
+
+Bearish Upper Wicks
+
+Samples : 17
+Average : 0.562%
+Median  : 0.487%
+Minimum : 0.000%
+Maximum : 1.456%
+Std Dev : 0.354
+CV      : 0.630
+
+Overall Score : 0.637
+
+------------------------------------------------------------
+
+PAIR : AIGENSYNUSDT
+
+Bullish Lower Wicks
+
+Samples : 15
+Average : 0.988%
+Median  : 0.902%
+Minimum : 0.214%
+Maximum : 2.323%
+Std Dev : 0.631
+CV      : 0.638
+
+Bearish Upper Wicks
+
+Samples : 21
+Average : 0.892%
+Median  : 0.719%
+Minimum : 0.043%
+Maximum : 2.188%
+Std Dev : 0.601
+CV      : 0.674
+
+Overall Score : 0.656
+
+------------------------------------------------------------
+
+PAIR : STARUSDT
+
+Bullish Lower Wicks
+
+Samples : 25
+Average : 0.898%
+Median  : 0.735%
+Minimum : 0.057%
+Maximum : 2.938%
+Std Dev : 0.720
+CV      : 0.802
+
+Bearish Upper Wicks
+
+Samples : 13
+Average : 1.508%
+Median  : 1.568%
+Minimum : 0.441%
+Maximum : 2.899%
+Std Dev : 0.781
+CV      : 0.518
+
+Overall Score : 0.660
+
+------------------------------------------------------------
+
+PAIR : EIGENUSDT
+
+Bullish Lower Wicks
+
+Samples : 20
+Average : 0.695%
+Median  : 0.711%
+Minimum : 0.043%
+Maximum : 2.222%
+Std Dev : 0.507
+CV      : 0.730
+
+Bearish Upper Wicks
+
+Samples : 18
+Average : 0.574%
+Median  : 0.564%
+Minimum : 0.000%
+Maximum : 1.207%
+Std Dev : 0.357
+CV      : 0.622
+
+Overall Score : 0.676
+
+------------------------------------------------------------
+
+PAIR : MORPHOUSDT
+
+Bullish Lower Wicks
+
+Samples : 15
+Average : 0.599%
+Median  : 0.502%
+Minimum : 0.061%
+Maximum : 1.522%
+Std Dev : 0.419
+CV      : 0.700
+
+Bearish Upper Wicks
+
+Samples : 24
+Average : 0.839%
+Median  : 0.802%
+Minimum : 0.005%
+Maximum : 2.187%
+Std Dev : 0.567
+CV      : 0.676
+
+Overall Score : 0.688
+
+------------------------------------------------------------
+
+PAIR : VIRTUALUSDT
+
+Bullish Lower Wicks
+
+Samples : 18
+Average : 0.691%
+Median  : 0.626%
+Minimum : 0.066%
+Maximum : 1.854%
+Std Dev : 0.414
+CV      : 0.598
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.878%
+Median  : 0.718%
+Minimum : 0.091%
+Maximum : 2.534%
+Std Dev : 0.687
+CV      : 0.782
+
+Overall Score : 0.690
+
+------------------------------------------------------------
+
+PAIR : VVVUSDT
+
+Bullish Lower Wicks
+
+Samples : 15
+Average : 0.582%
+Median  : 0.497%
+Minimum : 0.057%
+Maximum : 1.740%
+Std Dev : 0.383
+CV      : 0.659
+
+Bearish Upper Wicks
+
+Samples : 21
+Average : 0.791%
+Median  : 0.644%
+Minimum : 0.019%
+Maximum : 2.359%
+Std Dev : 0.577
+CV      : 0.730
+
+Overall Score : 0.694
+
+------------------------------------------------------------
+
+PAIR : TACUSDT
+
+Bullish Lower Wicks
+
+Samples : 21
+Average : 2.308%
+Median  : 2.238%
+Minimum : 0.161%
+Maximum : 6.573%
+Std Dev : 1.419
+CV      : 0.615
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 2.221%
+Median  : 2.674%
+Minimum : 0.000%
+Maximum : 5.453%
+Std Dev : 1.732
+CV      : 0.780
+
+Overall Score : 0.697
+
+------------------------------------------------------------
+
+PAIR : GRAMUSDT
+
+Bullish Lower Wicks
+
+Samples : 12
+Average : 0.414%
+Median  : 0.396%
+Minimum : 0.126%
+Maximum : 0.838%
+Std Dev : 0.199
+CV      : 0.481
+
+Bearish Upper Wicks
+
+Samples : 23
+Average : 0.398%
+Median  : 0.309%
+Minimum : 0.000%
+Maximum : 1.559%
+Std Dev : 0.365
+CV      : 0.918
+
+Overall Score : 0.699
+
+------------------------------------------------------------
+
+PAIR : FILUSDT
+
+Bullish Lower Wicks
+
+Samples : 15
+Average : 0.437%
+Median  : 0.431%
+Minimum : 0.105%
+Maximum : 0.943%
+Std Dev : 0.203
+CV      : 0.463
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.501%
+Median  : 0.363%
+Minimum : 0.013%
+Maximum : 1.973%
+Std Dev : 0.470
+CV      : 0.938
+
+Overall Score : 0.701
+
+------------------------------------------------------------
+
+PAIR : WLDUSDT
+
+Bullish Lower Wicks
+
+Samples : 18
+Average : 0.989%
+Median  : 1.140%
+Minimum : 0.049%
+Maximum : 1.927%
+Std Dev : 0.535
+CV      : 0.542
+
+Bearish Upper Wicks
+
+Samples : 21
+Average : 0.833%
+Median  : 0.633%
+Minimum : 0.025%
+Maximum : 2.585%
+Std Dev : 0.718
+CV      : 0.862
+
+Overall Score : 0.702
+
+------------------------------------------------------------
+
+PAIR : XMRUSDT
+
+Bullish Lower Wicks
+
+Samples : 19
+Average : 0.430%
+Median  : 0.319%
+Minimum : 0.108%
+Maximum : 1.171%
+Std Dev : 0.278
+CV      : 0.645
+
+Bearish Upper Wicks
+
+Samples : 18
+Average : 0.420%
+Median  : 0.301%
+Minimum : 0.019%
+Maximum : 1.267%
+Std Dev : 0.331
+CV      : 0.789
+
+Overall Score : 0.717
+
+------------------------------------------------------------
+
+PAIR : BASEDUSDT
+
+Bullish Lower Wicks
+
+Samples : 19
+Average : 1.282%
+Median  : 1.085%
+Minimum : 0.000%
+Maximum : 3.249%
+Std Dev : 0.924
+CV      : 0.720
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 1.365%
+Median  : 1.439%
+Minimum : 0.000%
+Maximum : 3.773%
+Std Dev : 0.975
+CV      : 0.715
+
+Overall Score : 0.718
+
+------------------------------------------------------------
+
+PAIR : SEIUSDT
+
+Bullish Lower Wicks
+
+Samples : 16
+Average : 0.385%
+Median  : 0.335%
+Minimum : 0.041%
+Maximum : 1.007%
+Std Dev : 0.264
+CV      : 0.686
+
+Bearish Upper Wicks
+
+Samples : 20
+Average : 0.514%
+Median  : 0.387%
+Minimum : 0.000%
+Maximum : 1.719%
+Std Dev : 0.390
+CV      : 0.760
+
+Overall Score : 0.723
+
+------------------------------------------------------------
+
+PAIR : NATGASUSDT
+
+Bullish Lower Wicks
+
+Samples : 16
+Average : 0.364%
+Median  : 0.279%
+Minimum : 0.034%
+Maximum : 0.823%
+Std Dev : 0.247
+CV      : 0.677
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.431%
+Median  : 0.319%
+Minimum : 0.035%
+Maximum : 1.451%
+Std Dev : 0.336
+CV      : 0.781
+
+Overall Score : 0.729
+
+------------------------------------------------------------
+
+PAIR : INJUSDT
+
+Bullish Lower Wicks
+
+Samples : 18
+Average : 0.725%
+Median  : 0.624%
+Minimum : 0.020%
+Maximum : 1.688%
+Std Dev : 0.476
+CV      : 0.656
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.624%
+Median  : 0.652%
+Minimum : 0.000%
+Maximum : 1.953%
+Std Dev : 0.505
+CV      : 0.809
+
+Overall Score : 0.732
+
+------------------------------------------------------------
+
+PAIR : POLUSDT
+
+Bullish Lower Wicks
+
+Samples : 19
+Average : 0.413%
+Median  : 0.361%
+Minimum : 0.096%
+Maximum : 1.127%
+Std Dev : 0.272
+CV      : 0.658
+
+Bearish Upper Wicks
+
+Samples : 13
+Average : 0.340%
+Median  : 0.240%
+Minimum : 0.059%
+Maximum : 1.088%
+Std Dev : 0.281
+CV      : 0.828
+
+Overall Score : 0.743
+
+------------------------------------------------------------
+
+PAIR : TREEUSDT
+
+Bullish Lower Wicks
+
+Samples : 19
+Average : 0.476%
+Median  : 0.437%
+Minimum : 0.046%
+Maximum : 1.237%
+Std Dev : 0.322
+CV      : 0.676
+
+Bearish Upper Wicks
+
+Samples : 18
+Average : 0.808%
+Median  : 0.614%
+Minimum : 0.000%
+Maximum : 1.849%
+Std Dev : 0.656
+CV      : 0.812
+
+Overall Score : 0.744
+
+------------------------------------------------------------
+
+PAIR : XAUTUSDT
+
+Bullish Lower Wicks
+
+Samples : 10
+Average : 0.256%
+Median  : 0.208%
+Minimum : 0.082%
+Maximum : 0.468%
+Std Dev : 0.126
+CV      : 0.491
+
+Bearish Upper Wicks
+
+Samples : 16
+Average : 0.101%
+Median  : 0.082%
+Minimum : 0.000%
+Maximum : 0.385%
+Std Dev : 0.101
+CV      : 0.998
+
+Overall Score : 0.745
+
+------------------------------------------------------------
+
+PAIR : TAOUSDT
+
+Bullish Lower Wicks
+
+Samples : 13
+Average : 0.575%
+Median  : 0.593%
+Minimum : 0.106%
+Maximum : 1.539%
+Std Dev : 0.426
+CV      : 0.742
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.529%
+Median  : 0.515%
+Minimum : 0.005%
+Maximum : 1.595%
+Std Dev : 0.396
+CV      : 0.748
+
+Overall Score : 0.745
+
+------------------------------------------------------------
+
+PAIR : TRXUSDT
+
+Bullish Lower Wicks
+
+Samples : 13
+Average : 0.118%
+Median  : 0.104%
+Minimum : 0.000%
+Maximum : 0.234%
+Std Dev : 0.072
+CV      : 0.609
+
+Bearish Upper Wicks
+
+Samples : 17
+Average : 0.104%
+Median  : 0.062%
+Minimum : 0.003%
+Maximum : 0.275%
+Std Dev : 0.093
+CV      : 0.893
+
+Overall Score : 0.751
+
+------------------------------------------------------------
+
+PAIR : PENDLEUSDT
+
+Bullish Lower Wicks
+
+Samples : 17
+Average : 0.651%
+Median  : 0.562%
+Minimum : 0.178%
+Maximum : 1.600%
+Std Dev : 0.450
+CV      : 0.691
+
+Bearish Upper Wicks
+
+Samples : 21
+Average : 0.884%
+Median  : 0.630%
+Minimum : 0.013%
+Maximum : 2.661%
+Std Dev : 0.717
+CV      : 0.811
+
+Overall Score : 0.751
+
+------------------------------------------------------------
+
+PAIR : TRUMPUSDT
+
+Bullish Lower Wicks
+
+Samples : 18
+Average : 0.617%
+Median  : 0.612%
+Minimum : 0.065%
+Maximum : 1.160%
+Std Dev : 0.369
+CV      : 0.597
+
+Bearish Upper Wicks
+
+Samples : 17
+Average : 0.412%
+Median  : 0.316%
+Minimum : 0.063%
+Maximum : 1.496%
+Std Dev : 0.373
+CV      : 0.905
+
+Overall Score : 0.751
+
+------------------------------------------------------------
+
+PAIR : WIFUSDT
+
+Bullish Lower Wicks
+
+Samples : 19
+Average : 0.644%
+Median  : 0.522%
+Minimum : 0.065%
+Maximum : 2.119%
+Std Dev : 0.470
+CV      : 0.730
+
+Bearish Upper Wicks
+
+Samples : 15
+Average : 0.562%
+Median  : 0.459%
+Minimum : 0.000%
+Maximum : 1.753%
+Std Dev : 0.435
+CV      : 0.773
+
+Overall Score : 0.752
+
+------------------------------------------------------------
+
+PAIR : FETUSDT
+
+Bullish Lower Wicks
+
+Samples : 16
+Average : 0.428%
+Median  : 0.341%
+Minimum : 0.062%
+Maximum : 1.012%
+Std Dev : 0.235
+CV      : 0.549
+
+Bearish Upper Wicks
+
+Samples : 22
+Average : 0.440%
+Median  : 0.311%
+Minimum : 0.000%
+Maximum : 1.846%
+Std Dev : 0.422
+CV      : 0.959
+
+Overall Score : 0.754
+
+------------------------------------------------------------
+
+PAIR : BEATUSDT
+
+Bullish Lower Wicks
+
+Samples : 17
+Average : 1.383%
+Median  : 1.156%
+Minimum : 0.078%
+Maximum : 4.010%
+Std Dev : 0.976
+CV      : 0.706
+
+Bearish Upper Wicks
+
+Samples : 21
+Average : 1.449%
+Median  : 1.181%
+Minimum : 0.189%
+Maximum : 3.758%
+Std Dev : 1.164
+CV      : 0.803
+
+Overall Score : 0.755
+
+------------------------------------------------------------
+
+PAIR : MYXUSDT
+
+Bullish Lower Wicks
+
+Samples : 20
+Average : 1.295%
+Median  : 0.998%
+Minimum : 0.296%
+Maximum : 3.622%
+Std Dev : 0.975
+CV      : 0.753
+
+Bearish Upper Wicks
+
+Samples : 18
+Average : 1.617%
+Median  : 1.149%
+Minimum : 0.170%
+Maximum : 4.845%
+Std Dev : 1.227
+CV      : 0.759
+
+Overall Score : 0.756
+
+------------------------------------------------------------
+
+PAIR : ARBUSDT
+
+Bullish Lower Wicks
+
+Samples : 18
+Average : 0.756%
+Median  : 0.700%
+Minimum : 0.087%
+Maximum : 1.779%
+Std Dev : 0.467
+CV      : 0.617
+
+Bearish Upper Wicks
+
+Samples : 22
+Average : 0.892%
+Median  : 0.807%
+Minimum : 0.000%
+Maximum : 2.407%
+Std Dev : 0.800
+CV      : 0.897
+
+Overall Score : 0.757
+
+------------------------------------------------------------
+
+PAIR : SLXUSDT
+
+Bullish Lower Wicks
+
+Samples : 12
+Average : 1.037%
+Median  : 0.762%
+Minimum : 0.296%
+Maximum : 3.091%
+Std Dev : 0.789
+CV      : 0.761
+
+Bearish Upper Wicks
+
+Samples : 27
+Average : 1.217%
+Median  : 0.935%
+Minimum : 0.107%
+Maximum : 3.412%
+Std Dev : 0.918
+CV      : 0.754
+
+Overall Score : 0.757
+
+------------------------------------------------------------
+
+PAIR : PAXGUSDT
+
+Bullish Lower Wicks
+
+Samples : 10
+Average : 0.254%
+Median  : 0.191%
+Minimum : 0.065%
+Maximum : 0.463%
+Std Dev : 0.128
+CV      : 0.505
+
+Bearish Upper Wicks
+
+Samples : 17
+Average : 0.096%
+Median  : 0.074%
+Minimum : 0.000%
+Maximum : 0.374%
+Std Dev : 0.098
+CV      : 1.012
+
+Overall Score : 0.758
+
+------------------------------------------------------------
+
+PAIR : XAUUSDT
+
+Bullish Lower Wicks
+
+Samples : 10
+Average : 0.227%
+Median  : 0.177%
+Minimum : 0.055%
+Maximum : 0.483%
+Std Dev : 0.138
+CV      : 0.606
+
+Bearish Upper Wicks
+
+Samples : 13
+Average : 0.121%
+Median  : 0.080%
+Minimum : 0.010%
+Maximum : 0.393%
+Std Dev : 0.110
+CV      : 0.914
+
+Overall Score : 0.760
+
+------------------------------------------------------------
+
+PAIR : UNIUSDT
+
+Bullish Lower Wicks
+
+Samples : 17
+Average : 0.680%
+Median  : 0.445%
+Minimum : 0.027%
+Maximum : 1.901%
+Std Dev : 0.542
+CV      : 0.798
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.983%
+Median  : 0.998%
+Minimum : 0.000%
+Maximum : 2.480%
+Std Dev : 0.728
+CV      : 0.741
+
+Overall Score : 0.769
+
+------------------------------------------------------------
+
+PAIR : COLLECTUSDT
+
+Bullish Lower Wicks
+
+Samples : 17
+Average : 0.860%
+Median  : 0.728%
+Minimum : 0.142%
+Maximum : 2.577%
+Std Dev : 0.686
+CV      : 0.798
+
+Bearish Upper Wicks
+
+Samples : 20
+Average : 0.763%
+Median  : 0.604%
+Minimum : 0.119%
+Maximum : 2.149%
+Std Dev : 0.567
+CV      : 0.743
+
+Overall Score : 0.771
+
+------------------------------------------------------------
+
+PAIR : GWEIUSDT
+
+Bullish Lower Wicks
+
+Samples : 10
+Average : 3.348%
+Median  : 3.033%
+Minimum : 0.578%
+Maximum : 10.145%
+Std Dev : 2.760
+CV      : 0.824
+
+Bearish Upper Wicks
+
+Samples : 29
+Average : 2.389%
+Median  : 2.013%
+Minimum : 0.179%
+Maximum : 7.034%
+Std Dev : 1.725
+CV      : 0.722
+
+Overall Score : 0.773
+
+------------------------------------------------------------
+
+PAIR : ENAUSDT
+
+Bullish Lower Wicks
+
+Samples : 20
+Average : 0.502%
+Median  : 0.484%
+Minimum : 0.037%
+Maximum : 1.063%
+Std Dev : 0.307
+CV      : 0.611
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.604%
+Median  : 0.547%
+Minimum : 0.000%
+Maximum : 2.534%
+Std Dev : 0.570
+CV      : 0.944
+
+Overall Score : 0.777
+
+------------------------------------------------------------
+
+PAIR : CHZUSDT
+
+Bullish Lower Wicks
+
+Samples : 15
+Average : 0.402%
+Median  : 0.359%
+Minimum : 0.000%
+Maximum : 0.871%
+Std Dev : 0.266
+CV      : 0.660
+
+Bearish Upper Wicks
+
+Samples : 21
+Average : 0.484%
+Median  : 0.360%
+Minimum : 0.000%
+Maximum : 1.564%
+Std Dev : 0.434
+CV      : 0.898
+
+Overall Score : 0.779
+
+------------------------------------------------------------
+
+PAIR : PENGUUSDT
+
+Bullish Lower Wicks
+
+Samples : 17
+Average : 0.455%
+Median  : 0.371%
+Minimum : 0.000%
+Maximum : 1.181%
+Std Dev : 0.303
+CV      : 0.665
+
+Bearish Upper Wicks
+
+Samples : 20
+Average : 0.637%
+Median  : 0.338%
+Minimum : 0.033%
+Maximum : 1.811%
+Std Dev : 0.569
+CV      : 0.894
+
+Overall Score : 0.779
+
+------------------------------------------------------------
+
+PAIR : AVAXUSDT
+
+Bullish Lower Wicks
+
+Samples : 18
+Average : 0.468%
+Median  : 0.314%
+Minimum : 0.031%
+Maximum : 1.272%
+Std Dev : 0.365
+CV      : 0.781
+
+Bearish Upper Wicks
+
+Samples : 19
+Average : 0.387%
+Median  : 0.268%
+Minimum : 0.000%
+Maximum : 1.164%
+Std Dev : 0.302
+CV      : 0.779
+
+Overall Score : 0.780
+
+------------------------------------------------------------
+
+PAIR : GOOGLUSDT
+
+Bullish Lower Wicks
+
+Samples : 13
+Average : 0.178%
+Median  : 0.167%
+Minimum : 0.014%
+Maximum : 0.397%
+Std Dev : 0.126
+CV      : 0.706
+
+Bearish Upper Wicks
+
+Samples : 18
+Average : 0.163%
+Median  : 0.107%
+Minimum : 0.000%
+Maximum : 0.536%
+Std Dev : 0.141
+CV      : 0.865
+
+Overall Score : 0.786
+
+------------------------------------------------------------
+
+PAIR : DOTUSDT
+
+Bullish Lower Wicks
+
+Samples : 21
+Average : 0.687%
+Median  : 0.698%
+Minimum : 0.000%
+Maximum : 1.634%
+Std Dev : 0.451
+CV      : 0.657
+
+Bearish Upper Wicks
+
+Samples : 18
+Average : 0.513%
+Median  : 0.410%
+Minimum : 0.000%
+Maximum : 1.932%
+Std Dev : 0.471
+CV      : 0.919
+
+Overall Score : 0.788
+
+------------------------------------------------------------
+
+PAIR : REUSDT
+
+Bullish Lower Wicks
+
+Samples : 17
+Average : 1.073%
+Median  : 0.673%
+Minimum : 0.226%
+Maximum : 2.377%
+Std Dev : 0.669
+CV      : 0.623
+
+Bearish Upper Wicks
+
+Samples : 22
+Average : 0.896%
+Median  : 0.631%
+Minimum : 0.053%
+Maximum : 3.421%
+Std Dev : 0.857
+CV      : 0.956
+
+Overall Score : 0.790
+
+------------------------------------------------------------
+
+PAIR : VELVETUSDT
+
+Bullish Lower Wicks
+
+Samples : 19
+Average : 1.214%
+Median  : 1.103%
+Minimum : 0.089%
+Maximum : 4.267%
+Std Dev : 0.932
+CV      : 0.767
+
+Bearish Upper Wicks
+
+Samples : 21
+Average : 2.317%
+Median  : 1.670%
+Minimum : 0.000%
+Maximum : 7.967%
+Std Dev : 1.885
+CV      : 0.814
+
+Overall Score : 0.791
+
+------------------------------------------------------------
+
+PAIR : EDGEUSDT
+
+Bullish Lower Wicks
+
+Samples : 17
+Average : 1.513%
+Median  : 1.193%
+Minimum : 0.000%
+Maximum : 4.762%
+Std Dev : 1.372
+CV      : 0.907
+
+Bearish Upper Wicks
+
+Samples : 20
+Average : 1.920%
+Median  : 1.657%
+Minimum : 0.096%
+Maximum : 6.120%
+Std Dev : 1.296
+CV      : 0.675
+
+Overall Score : 0.791
+
+------------------------------------------------------------
+
+PAIR : PYTHUSDT
+
+Bullish Lower Wicks
+
+Samples : 22
+Average : 0.739%
+Median  : 0.640%
+Minimum : 0.122%
+Maximum : 1.396%
+Std Dev : 0.388
+CV      : 0.525
+
+Bearish Upper Wicks
+
+Samples : 16
+Average : 0.957%
+Median  : 0.497%
+Minimum : 0.000%
+Maximum : 3.770%
+Std Dev : 1.023
+CV      : 1.068
+
+Overall Score : 0.797
+
+------------------------------------------------------------
+
+PAIR : RIFUSDT
+
+Bullish Lower Wicks
+
+Samples : 21
+Average : 1.314%
+Median  : 0.636%
+Minimum : 0.037%
+Maximum : 4.710%
+Std Dev : 1.263
+CV      : 0.961
+
+Bearish Upper Wicks
+
+Samples : 18
+Average : 1.114%
+Median  : 1.142%
+Minimum : 0.000%
+Maximum : 2.265%
+Std Dev : 0.708
+CV      : 0.636
+
+Overall Score : 0.798
+
+------------------------------------------------------------
+

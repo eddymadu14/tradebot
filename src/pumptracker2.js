@@ -4,7 +4,10 @@
 
 import axios from "axios";
 import pLimit from "p-limit";
+import fs from "fs";
 
+const seenSignals = new Set();
+const SIGNAL_FILE = "./signals.txt";
 // ======================================================
 // CONFIG
 // ======================================================
@@ -527,6 +530,9 @@ async function analyzeSymbol(meta, btcRegime) {
   }
 }
 
+
+
+/*
 // ======================================================
 // MAIN LOOP
 // ======================================================
@@ -554,7 +560,7 @@ async function runScanner() {
 
       const results = (await Promise.all(jobs))
         .filter(Boolean)
-        .filter((x) => Number(x.score) >= 55)
+        .filter((x) => Number(x.score) >= 60)
         .sort((a, b) => Number(b.score) - Number(a.score))
         .slice(0, TOP_RESULTS);
 
@@ -581,6 +587,92 @@ async function runScanner() {
       }
     } catch (err) {
       console.log("Loop error:", err.message);
+    }
+
+    await sleep(LOOP_MS);
+  }
+}
+
+runScanner();
+
+
+*/
+
+
+
+
+
+// ======================================================
+// MAIN LOOP
+// ======================================================
+
+async function runScanner() {
+  console.clear();
+
+  console.log("======================================");
+  console.log("ADVANCED FUTURES MOMENTUM ENGINE");
+  console.log("======================================");
+  console.log("");
+
+  while (true) {
+    try {
+      const btcRegime = await getBTCRegime();
+
+      const pairs = await getEligiblePairs();
+
+      const limit = pLimit(CONCURRENCY);
+
+      const jobs = pairs.map((p) =>
+        limit(() => analyzeSymbol(p, btcRegime))
+      );
+
+      const results = (await Promise.all(jobs))
+        .filter(Boolean)
+        .filter((x) => Number(x.score) >= 60)
+        .sort((a, b) => Number(b.score) - Number(a.score))
+        .slice(0, TOP_RESULTS);
+
+      const scanTime = new Date().toLocaleString();
+
+      console.log("\n====================================================");
+      console.log(`SCAN: ${scanTime}`);
+      console.log(
+        `BTC REGIME: ${btcRegime.bullish ? "BULLISH" : "WEAK"} | BTC MOMENTUM: ${btcRegime.momentum}%`
+      );
+      console.log("====================================================");
+
+      if (!results.length) {
+        console.log("No high-quality continuation setups.");
+      } else {
+        for (const signal of results) {
+          const id = `${signal.symbol}_${signal.direction}_${signal.score}`;
+
+          if (seenSignals.has(id)) continue;
+
+          seenSignals.add(id);
+
+          console.log(
+            `[${scanTime}] ${signal.symbol} | ${signal.direction} | Score: ${signal.score}`
+          );
+
+          console.log(signal);
+
+          fs.appendFileSync(
+            SIGNAL_FILE,
+            `[${scanTime}] ${JSON.stringify(signal)}\n`
+          );
+        }
+      }
+
+      // Prevent the Set from growing forever
+      if (seenSignals.size > 5000) {
+        seenSignals.clear();
+      }
+    } catch (err) {
+      console.log(
+        `[${new Date().toLocaleString()}] Loop error:`,
+        err.message
+      );
     }
 
     await sleep(LOOP_MS);

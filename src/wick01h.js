@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const SYMBOL = process.argv[2] || "BTCUSDT";
-const INTERVAL = "1d";
+const SYMBOL = "WLDUSDT";
+const INTERVAL = "1h";
 const LIMIT = 200;
 
 const BASE_URL = "https://fapi.binance.com";

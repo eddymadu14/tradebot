@@ -4,7 +4,10 @@
 
 import axios from "axios";
 import pLimit from "p-limit";
+import fs from "fs";
 
+const seenSignals = new Set();
+const SIGNAL_FILE = "./signalsmain.txt";
 const BASE_URL = "https://fapi.binance.com";
 const CONCURRENCY = 8;
 const INTERVAL = "5m";
@@ -191,7 +194,7 @@ async function analyzeSymbol(meta) {
     return null;
   }
 }
-
+/*
 // ----------------------------
 // LOOP
 // ----------------------------
@@ -211,7 +214,7 @@ async function runScanner() {
 
       const results = (await Promise.all(jobs))
         .filter(Boolean)
-        .filter((x) => Number(x.score) >= 45)
+        .filter((x) => Number(x.score) >= 58)
         .sort((a, b) => Number(b.score) - Number(a.score))
         .slice(0, TOP_RESULTS);
 
@@ -228,6 +231,81 @@ async function runScanner() {
       }
     } catch (err) {
       console.log("Loop error:", err.message);
+    }
+
+    await sleep(LOOP_MS);
+  }
+}
+
+runScanner();
+*/
+
+
+
+
+
+// ----------------------------
+// LOOP
+// ----------------------------
+async function runScanner() {
+  console.clear();
+
+  console.log("=== BINANCE FUTURES PUMP TRACKER ===");
+  console.log("Min 24h Volume:", MIN_24H_VOLUME.toLocaleString(), "USDT");
+  console.log("Scanning every", LOOP_MS / 1000, "sec...\n");
+
+  while (true) {
+    try {
+      const pairs = await getEligiblePairs();
+
+      const limit = pLimit(CONCURRENCY);
+
+      const jobs = pairs.map((p) => limit(() => analyzeSymbol(p)));
+
+      const results = (await Promise.all(jobs))
+        .filter(Boolean)
+        .filter((x) => Number(x.score) >= 58)
+        .sort((a, b) => Number(b.score) - Number(a.score))
+        .slice(0, TOP_RESULTS);
+
+      const scanTime = new Date().toLocaleString();
+
+      console.log("\n====================================================");
+      console.log(`SCAN: ${scanTime}`);
+      console.log("====================================================");
+
+      if (!results.length) {
+        console.log("No quality pump setups detected.");
+      } else {
+        for (const signal of results) {
+          const id = `${signal.symbol}_${signal.direction}_${signal.score}`;
+
+          if (seenSignals.has(id)) continue;
+
+          seenSignals.add(id);
+
+          console.log(
+            `[${scanTime}] ${signal.symbol} | ${signal.direction} | Score: ${signal.score}`
+          );
+
+          console.log(signal);
+
+          fs.appendFileSync(
+            SIGNAL_FILE,
+            `[${scanTime}] ${JSON.stringify(signal)}\n`
+          );
+        }
+      }
+
+      // Prevent unlimited memory growth
+      if (seenSignals.size > 5000) {
+        seenSignals.clear();
+      }
+    } catch (err) {
+      console.log(
+        `[${new Date().toLocaleString()}] Loop error:`,
+        err.message
+      );
     }
 
     await sleep(LOOP_MS);

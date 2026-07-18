@@ -1,0 +1,3 @@
+[7/18/2026, 2:29:05 AM] {"symbol":"ONDOUSDT","score":"68.96","relVol":"10.68","oiChangePct":"0.00","momentumPct":"1.40","rangePct":"1.71","breakout":true,"funding":"0.000004","volume24h":125798204}
+[7/18/2026, 2:29:59 AM] {"symbol":"ONDOUSDT","score":"65.80","relVol":"19.37","oiChangePct":"-0.02","momentumPct":"1.08","rangePct":"2.35","breakout":true,"funding":"0.000006","volume24h":126897336}
+[7/18/2026, 2:50:13 AM] {"symbol":"LTCUSDT","score":"58.54","relVol":"5.72","oiChangePct":"0.00","momentumPct":"0.35","rangePct":"0.42","breakout":true,"funding":"0.000025","volume24h":59864679}
